@@ -1,0 +1,19 @@
+# Segredos — NUNCA suba isso para o GitHub
+.env
+.env.save
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# macOS
+.DS_Store
+
+# Dados locais
+*.xlsx

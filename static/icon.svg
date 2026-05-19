@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="38" fill="#0B7A50"/>
+  <!-- seringa -->
+  <g transform="translate(96,96) rotate(-45) translate(-48,-48)">
+    <!-- corpo da seringa -->
+    <rect x="20" y="38" width="56" height="20" rx="4" fill="#fff" opacity=".95"/>
+    <!-- êmbolo -->
+    <rect x="72" y="34" width="10" height="28" rx="3" fill="#E6F4EE"/>
+    <!-- tampa/agulha -->
+    <rect x="8" y="44" width="14" height="8" rx="2" fill="#fff" opacity=".7"/>
+    <polygon points="8,44 2,48 8,52" fill="#fff" opacity=".6"/>
+    <!-- líquido (verde claro) -->
+    <rect x="22" y="40" width="34" height="16" rx="3" fill="#4ADE80" opacity=".7"/>
+    <!-- marcações -->
+    <line x1="38" y1="38" x2="38" y2="34" stroke="#fff" stroke-width="2" opacity=".6"/>
+    <line x1="50" y1="38" x2="50" y2="34" stroke="#fff" stroke-width="2" opacity=".6"/>
+  </g>
+  <!-- cruz médica -->
+  <rect x="140" y="28" width="22" height="8" rx="3" fill="#fff" opacity=".85"/>
+  <rect x="147" y="21" width="8" height="22" rx="3" fill="#fff" opacity=".85"/>
+</svg>

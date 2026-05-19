@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0B7A50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VacinaFácil">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<title>VacinaFácil AI</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green:      #0B7A50;
+  --green-dark: #085C3C;
+  --green-lite: #E6F4EE;
+  --bg:         #ECF0F1;
+  --text:       #1a1a1a;
+  --subtext:    #6b7280;
+  --radius:     18px;
+  --font:       -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --fsize:      15px;
+}
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  color: var(--text);
+  font-size: var(--fsize);
+}
+
+/* ══════════════════════════════════════════════
+   LANDING PAGE
+   ══════════════════════════════════════════════ */
+#landing {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: linear-gradient(160deg, var(--green-dark) 0%, #0f9960 60%, #1aaa6e 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 52px 24px 52px;
+  overflow-y: auto;
+  transition: opacity .5s ease, transform .5s ease;
+}
+#landing.saindo {
+  opacity: 0;
+  transform: translateY(-30px);
+  pointer-events: none;
+}
+
+.lp-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.lp-icone {
+  width: 90px; height: 90px;
+  background: rgba(255,255,255,.15);
+  border-radius: 28px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 50px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.2);
+}
+
+.lp-titulo {
+  color: #fff;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  line-height: 1.1;
+}
+.lp-titulo span { color: #a7f3d0; }
+
+.lp-subtitulo {
+  color: rgba(255,255,255,.85);
+  font-size: 16px;
+  line-height: 1.55;
+  max-width: 320px;
+}
+
+.lp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.lp-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+  margin: 28px 0;
+}
+
+.lp-card {
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 18px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.lp-card-icone {
+  font-size: 30px;
+  flex-shrink: 0;
+  width: 48px;
+  text-align: center;
+}
+.lp-card-texto h4 {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.lp-card-texto p {
+  color: rgba(255,255,255,.75);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.lp-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.lp-cta {
+  width: 100%;
+  padding: 18px;
+  background: #fff;
+  color: var(--green-dark);
+  border: none;
+  border-radius: 18px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0,0,0,.2);
+  transition: transform .15s, box-shadow .15s;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: -.2px;
+}
+.lp-cta:hover  { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,.25); }
+.lp-cta:active { transform: scale(.97); }
+
+.lp-selos {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.lp-selo {
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.lp-disclaimer {
+  color: rgba(255,255,255,.55);
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ── STATS BAR ───────────────────────────────── */
+.lp-stats {
+  display: flex;
+  width: 100%;
+  max-width: 400px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 18px;
+}
+.lp-stat {
+  flex: 1;
+  padding: 14px 10px;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,.15);
+}
+.lp-stat:last-child { border-right: none; }
+.lp-stat-num   { color: #a7f3d0; font-size: 22px; font-weight: 800; line-height: 1; display: block; }
+.lp-stat-label { color: rgba(255,255,255,.7); font-size: 11px; margin-top: 3px; display: block; }
+
+/* ── COMO FUNCIONA ───────────────────────────── */
+.lp-section-titulo {
+  color: #a7f3d0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.lp-como { width: 100%; max-width: 400px; }
+.lp-steps { display: flex; flex-direction: column; gap: 10px; }
+.lp-step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.lp-step-num {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(167,243,208,.2);
+  border: 2px solid #a7f3d0;
+  color: #a7f3d0;
+  font-size: 16px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.lp-step-texto h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.lp-step-texto p  { color: rgba(255,255,255,.7); font-size: 12px; line-height: 1.4; }
+
+/* ── FAQ ─────────────────────────────────────── */
+.lp-faq { width: 100%; max-width: 400px; }
+.lp-faq-items { display: flex; flex-direction: column; gap: 8px; }
+.lp-faq-item {
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.lp-faq-item summary {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.lp-faq-item summary::after { content: '+'; color: #a7f3d0; font-size: 18px; flex-shrink: 0; }
+.lp-faq-item[open] summary::after { content: '−'; }
+.lp-faq-item p { color: rgba(255,255,255,.75); font-size: 12px; line-height: 1.55; margin-top: 8px; }
+
+/* ── DIVISOR LP ──────────────────────────────── */
+.lp-divider {
+  width: 100%; max-width: 400px;
+  border: none;
+  border-top: 1px solid rgba(255,255,255,.15);
+  margin: 0;
+}
+
+/* ── ACESSIBILIDADE ───────────────────────────── */
+body.grande {
+  --fsize: 18px;
+}
+body.grande .bubble   { font-size: 17px; line-height: 1.7; }
+body.grande .chip     { font-size: 16px; }
+body.grande #txt      { font-size: 18px; }
+body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
+
+/* ── BARRA DE NOTIFICAÇÃO ────────────────────── */
+#notifBar {
+  display: none;
+  background: linear-gradient(90deg, #d97706, #f59e0b);
+  color: #fff;
+  padding: 10px 16px;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+  z-index: 20;
+}
+#notifBar span { flex: 1; }
+#notifBar button {
+  background: rgba(0,0,0,.2);
+  border: none; border-radius: 50%;
+  width: 26px; height: 26px;
+  font-size: 14px; cursor: pointer; color: #fff;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+}
+
+/* ── HEADER ─────────────────────────────────── */
+.header {
+  background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
+  padding: 12px 14px env(safe-area-inset-top, 0);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.header-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.18);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.header-info { flex: 1; min-width: 0; }
+.header-info h1 { color: #fff; font-size: 16px; font-weight: 700; }
+.header-info p  { color: rgba(255,255,255,.8); font-size: 11px; margin-top: 1px; }
+
+.header-btn {
+  background: rgba(255,255,255,.15);
+  border: none; border-radius: 20px;
+  padding: 6px 10px;
+  font-size: 13px; font-weight: 700;
+  line-height: 1;
+  cursor: pointer; color: #fff;
+  transition: background .15s;
+  flex-shrink: 0;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.header-btn:hover, .header-btn:active { background: rgba(255,255,255,.3); }
+
+.header-status {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,.15);
+  border-radius: 20px;
+  padding: 6px 10px;
+  font-size: 12px; color: #fff;
+  flex-shrink: 0;
+}
+.dot-online {
+  width: 7px; height: 7px;
+  background: #4ADE80;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+
+/* ── CHAT AREA ───────────────────────────────── */
+.chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+
+/* ── MESSAGES ────────────────────────────────── */
+.msg { display: flex; flex-direction: column; max-width: 86%; animation: pop .25s ease; }
+@keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+
+.msg.user { align-self: flex-end; align-items: flex-end; }
+.msg.ai   { align-self: flex-start; align-items: flex-start; }
+
+.bubble {
+  padding: 12px 15px;
+  border-radius: var(--radius);
+  font-size: var(--fsize);
+  line-height: 1.65;
+  word-break: break-word;
+}
+.msg.user .bubble {
+  background: var(--green);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.msg.ai .bubble {
+  background: #fff;
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+}
+
+.msg-time { font-size: 11px; color: var(--subtext); margin-top: 4px; padding: 0 3px; }
+
+/* Markdown dentro da bolha IA */
+.bubble h1, .bubble h2, .bubble h3 {
+  font-size: 15px; font-weight: 700;
+  color: var(--green-dark);
+  margin: 10px 0 4px;
+}
+.bubble h1:first-child,
+.bubble h2:first-child,
+.bubble h3:first-child { margin-top: 0; }
+.bubble p  { margin: 5px 0; }
+.bubble ul, .bubble ol { padding-left: 20px; margin: 5px 0; }
+.bubble li { margin: 3px 0; }
+.bubble strong { font-weight: 700; color: var(--green-dark); }
+.bubble em     { font-style: italic; }
+.bubble hr  { border: none; border-top: 1px solid #e5e7eb; margin: 8px 0; }
+.bubble table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 6px 0; }
+.bubble th, .bubble td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; }
+.bubble th { background: var(--green-lite); font-weight: 600; }
+.bubble code {
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 13px;
+  font-family: monospace;
+}
+
+/* ── AÇÕES DA BOLHA IA ───────────────────────── */
+.bubble-actions {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  padding: 0 2px;
+}
+
+.btn-action {
+  border: none;
+  background: rgba(0,0,0,.06);
+  color: var(--subtext);
+  border-radius: 16px;
+  padding: 5px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 3px;
+  transition: background .15s, color .15s;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 1.2;
+}
+.btn-action:hover  { background: rgba(0,0,0,.12); color: #374151; }
+.btn-action:disabled { opacity: .5; cursor: default; }
+.btn-action.ok  { background: #dcfce7; color: #15803d; }
+.btn-action.nao { background: #fee2e2; color: #dc2626; }
+
+/* ── TYPING INDICATOR ───────────────────────── */
+.typing { display: flex; align-items: center; gap: 5px; padding: 12px 15px; }
+.tdot {
+  width: 9px; height: 9px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: bounce 1.3s infinite;
+}
+.tdot:nth-child(2) { animation-delay: .15s; }
+.tdot:nth-child(3) { animation-delay: .30s; }
+@keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-7px); } }
+
+/* ── SUGGESTIONS ─────────────────────────────── */
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 12px 10px;
+  flex-shrink: 0;
+}
+
+.chip {
+  display: flex; align-items: center; gap: 6px;
+  background: #fff;
+  border: 2px solid var(--green);
+  color: var(--green-dark);
+  border-radius: 22px;
+  padding: 9px 15px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.chip:hover, .chip:active { background: var(--green); color: #fff; }
+.chip-icon { font-size: 17px; line-height: 1; }
+
+/* ── INPUT AREA ──────────────────────────────── */
+.input-bar {
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0));
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.input-wrap {
+  flex: 1;
+  background: #F3F4F6;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  min-height: 48px;
+}
+
+#txt {
+  flex: 1;
+  border: none; background: transparent;
+  font-size: 16px; font-family: var(--font);
+  color: var(--text);
+  resize: none;
+  outline: none;
+  max-height: 110px;
+  line-height: 1.5;
+}
+#txt::placeholder { color: #9ca3af; }
+
+#btnSend {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: var(--green);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: transform .1s, background .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+#btnSend:active { transform: scale(.92); }
+#btnSend:disabled { background: #d1d5db; cursor: not-allowed; }
+#btnSend svg { width: 22px; height: 22px; fill: #fff; }
+
+/* ── DISCLAIMER ──────────────────────────────── */
+.disclaimer {
+  text-align: center;
+  font-size: 11px;
+  color: #9ca3af;
+  padding: 3px 12px 6px;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.chat::-webkit-scrollbar { width: 4px; }
+.chat::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+
+/* ── BOTÃO MICROFONE ─────────────────────────── */
+#btnMic {
+  width: 48px; height: 48px;
+  border-radius: 50%; border: none;
+  background: #F3F4F6;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background .2s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+#btnMic:active { transform: scale(.92); }
+#btnMic.gravando { background: #ef4444; animation: pisca 1s infinite; }
+#btnMic.gravando svg { fill: #fff; }
+#btnMic svg { width: 22px; height: 22px; fill: #6b7280; }
+@keyframes pisca { 0%,100% { opacity: 1; } 50% { opacity: .6; } }
+
+/* ── MODAL LEMBRETE ──────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.aberto { display: flex; }
+
+.modal {
+  background: #fff;
+  border-radius: 22px;
+  padding: 28px 24px;
+  width: 100%; max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  animation: popUp .25s ease;
+}
+@keyframes popUp { from { opacity:0; transform: scale(.92) translateY(10px); } to { opacity:1; transform: none; } }
+
+.modal h3 { color: var(--green-dark); font-size: 18px; margin-bottom: 6px; }
+.modal p.modal-sub { color: var(--subtext); font-size: 13px; margin-bottom: 16px; }
+
+.modal label {
+  display: block;
+  font-size: 13px;
+  color: var(--subtext);
+  margin-bottom: 4px;
+  margin-top: 12px;
+  font-weight: 600;
+}
+.modal input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .15s;
+  color: var(--text);
+  background: #f9fafb;
+}
+.modal input:focus { border-color: var(--green); background: #fff; }
+
+.modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+.modal-btns button {
+  flex: 1;
+  padding: 13px;
+  border-radius: 12px;
+  border: none;
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  transition: transform .1s, opacity .15s;
+}
+.modal-btns button:active { transform: scale(.97); }
+.btn-cancelar { background: #f3f4f6; color: var(--text); }
+.btn-salvar   { background: var(--green); color: #fff; }
+
+/* ── BOTÕES DE EMERGÊNCIA ─────────────────────── */
+.emerg-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: #fff;
+  transition: opacity .15s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.emerg-btn:active { opacity: .85; transform: scale(.98); }
+.emerg-num  { font-size: 22px; font-weight: 800; flex-shrink: 0; letter-spacing: .5px; }
+.emerg-nome { font-size: 13px; opacity: .92; line-height: 1.3; }
+
+/* ── TOAST ────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%; transform: translateX(-50%);
+  background: #1a1a1a;
+  color: #fff;
+  padding: 11px 22px;
+  border-radius: 22px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 300;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: toastIn .25s ease, toastOut .3s ease 2.5s forwards;
+}
+@keyframes toastIn  { from { opacity:0; transform: translateX(-50%) translateY(12px); } to { opacity:1; transform: translateX(-50%); } }
+@keyframes toastOut { to   { opacity:0; transform: translateX(-50%) translateY(6px); } }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     LANDING PAGE
+     ══════════════════════════════════════════════ -->
+<div id="landing">
+
+  <!-- Hero -->
+  <div class="lp-hero">
+    <div class="lp-icone">💉</div>
+    <div class="lp-titulo">VacinaFácil <span>AI</span></div>
+    <p class="lp-subtitulo">
+      Tire suas dúvidas sobre vacinas<br>
+      <strong style="color:#a7f3d0">de graça e sem sair de casa.</strong>
+    </p>
+    <div class="lp-badge">🇧🇷 Baseado no calendário oficial do SUS</div>
+  </div>
+
+  <!-- Cards de funcionalidades -->
+  <div class="lp-cards">
+    <div class="lp-card">
+      <div class="lp-card-icone">💬</div>
+      <div class="lp-card-texto">
+        <h4>Pergunte do jeito que quiser</h4>
+        <p>Escreva ou fale sua dúvida. A IA entende e responde na hora, de forma simples.</p>
+      </div>
+    </div>
+    <div class="lp-card">
+      <div class="lp-card-icone">📋</div>
+      <div class="lp-card-texto">
+        <h4>Informação oficial do Ministério da Saúde</h4>
+        <p>Calendário de vacinas atualizado para crianças, adultos, idosos e grávidas.</p>
+      </div>
+    </div>
+    <div class="lp-card">
+      <div class="lp-card-icone">📍</div>
+      <div class="lp-card-texto">
+        <h4>Encontre a UBS mais próxima</h4>
+        <p>Localize o posto de saúde mais perto de você e agende sua vacina.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA logo após os cards -->
+  <div style="width:100%;max-width:400px">
+    <button class="lp-cta" onclick="abrirChat()">
+      💬 Começar agora
+    </button>
+  </div>
+
+  <hr class="lp-divider">
+
+  <!-- Como funciona -->
+  <div class="lp-como">
+    <p class="lp-section-titulo">Como funciona</p>
+    <div class="lp-steps">
+      <div class="lp-step">
+        <div class="lp-step-num">1</div>
+        <div class="lp-step-texto">
+          <h4>Escreva sua dúvida</h4>
+          <p>Digite qualquer pergunta sobre vacinas — calendário, doses, efeitos, mitos.</p>
+        </div>
+      </div>
+      <div class="lp-step">
+        <div class="lp-step-num">2</div>
+        <div class="lp-step-texto">
+          <h4>A IA consulta o SUS</h4>
+          <p>Buscamos nas tabelas oficiais do Ministério da Saúde antes de responder.</p>
+        </div>
+      </div>
+      <div class="lp-step">
+        <div class="lp-step-num">3</div>
+        <div class="lp-step-texto">
+          <h4>Resposta clara na hora</h4>
+          <p>Sem cadastro, sem fila, sem enrolação. Salve no calendário ou compartilhe.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="lp-divider">
+
+  <!-- FAQ -->
+  <div class="lp-faq">
+    <p class="lp-section-titulo">Perguntas frequentes</p>
+    <div class="lp-faq-items">
+      <details class="lp-faq-item">
+        <summary>Vacina causa autismo?</summary>
+        <p>Não. Esse mito foi derrubado por dezenas de estudos científicos. A afirmação original foi retratada e seu autor perdeu o registro médico. Vacinas são seguras e salvam vidas.</p>
+      </details>
+      <details class="lp-faq-item">
+        <summary>Grávida pode se vacinar?</summary>
+        <p>Sim! O PNI recomenda várias vacinas durante a gestação — como Influenza, dTpa e Hepatite B. O VacinaFácil AI te orienta quais são seguras em cada trimestre.</p>
+      </details>
+      <details class="lp-faq-item">
+        <summary>Onde tomar vacina de graça?</summary>
+        <p>Em qualquer UBS (Unidade Básica de Saúde) do Brasil. Todas as vacinas do calendário oficial do SUS são 100% gratuitas. Use o botão 📍 UBS no chat para achar a mais próxima.</p>
+      </details>
+      <details class="lp-faq-item">
+        <summary>Meus dados ficam guardados?</summary>
+        <p>Não armazenamos suas perguntas ou dados pessoais. O histórico fica só no seu aparelho e pode ser apagado a qualquer momento.</p>
+      </details>
+    </div>
+  </div>
+
+  <hr class="lp-divider">
+
+  <!-- Seals + Disclaimer -->
+  <div class="lp-footer">
+    <div class="lp-selos">
+      <div class="lp-selo">✅ 100% gratuito</div>
+      <div class="lp-selo">🏥 Dados do SUS</div>
+      <div class="lp-selo">🔒 Sem cadastro</div>
+      <div class="lp-selo">📱 Funciona offline</div>
+    </div>
+
+    <p class="lp-disclaimer">
+      ⚠️ Não substitui médico ou profissional de saúde.<br>
+      Projeto acadêmico · PNI / Ministério da Saúde · <a href="tel:136" style="color:rgba(255,255,255,.6)">Disque Saúde 136</a>
+    </p>
+  </div>
+
+</div>
+
+<!-- ── BARRA DE NOTIFICAÇÃO ────────────────────── -->
+<div id="notifBar" role="alert" aria-live="polite">
+  <span id="notifMsg">💉 Você tem lembretes de vacina!</span>
+  <button onclick="fecharNotif()" aria-label="Fechar">✕</button>
+</div>
+
+<!-- ── HEADER ──────────────────────────────────── -->
+<header class="header">
+  <button class="header-btn" onclick="voltarLanding()" title="Voltar" style="font-size:20px;padding:4px 8px">‹</button>
+  <div class="header-avatar">💉</div>
+  <div class="header-info">
+    <h1>VacinaFácil AI</h1>
+    <p>Orientação vacinal · SUS</p>
+  </div>
+  <button id="btnAcesso" class="header-btn" onclick="toggleAcessibilidade()" title="Aumentar texto">A+</button>
+  <button class="header-btn" onclick="abrirUBS()" title="Encontrar UBS próxima">📍 UBS</button>
+  <button class="header-btn" style="background:rgba(239,68,68,.7)" onclick="abrirEmergencias()" title="Números de emergência">🚨</button>
+  <div class="header-status">
+    <div class="dot-online"></div>
+    Online
+  </div>
+</header>
+
+<!-- ── CHAT ────────────────────────────────────── -->
+<div class="chat" id="chat">
+  <div class="msg ai">
+    <div class="bubble">
+      <strong>Olá! Sou o VacinaFácil AI.</strong><br><br>
+      Estou aqui para tirar suas dúvidas sobre <strong>vacinas</strong> —
+      calendário do SUS, efeitos colaterais, mitos e muito mais.<br><br>
+      Toque em uma sugestão abaixo ou escreva sua pergunta! 💬
+    </div>
+  </div>
+  <div class="msg ai">
+    <div class="bubble" style="background:#fff8e1;border-left:4px solid #f59e0b;border-radius:8px;font-size:13px;color:#78350f;padding:10px 14px;">
+      ⚠️ <strong>Atenção:</strong> Sou um assistente de orientação, <strong>não sou médico</strong>.
+      Minhas respostas são baseadas no calendário oficial do SUS e <strong>não substituem</strong>
+      consulta com profissional de saúde. Em caso de dúvida, procure a UBS mais próxima.
+    </div>
+  </div>
+</div>
+
+<!-- ── SUGESTÕES ────────────────────────────────── -->
+<div class="suggestions" id="suggestions">
+  <button class="chip" data-msg="Quais vacinas meu filho de 2 meses precisa tomar?" onclick="usarSugestao(this)">
+    <span class="chip-icon">👶</span> Vacinas do bebê
+  </button>
+  <button class="chip" data-msg="Vacina causa autismo? Isso é verdade?" onclick="usarSugestao(this)">
+    <span class="chip-icon">❓</span> Vacina causa autismo?
+  </button>
+  <button class="chip" data-msg="Posso tomar vacina estando gripado com febre?" onclick="usarSugestao(this)">
+    <span class="chip-icon">🤒</span> Estou doente, posso me vacinar?
+  </button>
+  <button class="chip" data-msg="Sou grávida, quais vacinas posso tomar?" onclick="usarSugestao(this)">
+    <span class="chip-icon">🤰</span> Vacina na gravidez
+  </button>
+  <button class="chip" data-msg="Perdi uma dose da vacina, o que devo fazer?" onclick="usarSugestao(this)">
+    <span class="chip-icon">⏰</span> Perdi uma dose
+  </button>
+  <button class="chip" data-msg="Vou viajar para fora do Brasil, quais vacinas preciso?" onclick="usarSugestao(this)">
+    <span class="chip-icon">✈️</span> Viagem internacional
+  </button>
+</div>
+
+<!-- ── INPUT ────────────────────────────────────── -->
+<div class="input-bar">
+  <div class="input-wrap">
+    <textarea id="txt" rows="1"
+      placeholder="Digite sua dúvida sobre vacinas..."
+      oninput="autoSize(this)"
+      onkeydown="tecla(event)"></textarea>
+  </div>
+  <button id="btnMic" onclick="toggleMic()" aria-label="Falar por voz">
+    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93H6c0 3.31 2.69 6 6 6s6-2.69 6-6h2c0 4.08-3.06 7.44-7 7.93V22h-2v-4.07z"/></svg>
+  </button>
+  <button id="btnSend" onclick="enviar()" aria-label="Enviar">
+    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+  </button>
+</div>
+
+<div class="disclaimer">
+  ⚠️ Este assistente não substitui um médico ou profissional de saúde.
+</div>
+
+<!-- ── MODAL EMERGÊNCIAS ────────────────────────── -->
+<div class="modal-overlay" id="modalEmergencias" onclick="fecharModalEmergencias(event)">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 style="color:#dc2626">🚨 Emergências</h3>
+    <p class="modal-sub">Toque no número para ligar diretamente.</p>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+      <a href="tel:192" class="emerg-btn" style="background:#dc2626">
+        <span class="emerg-num">192</span>
+        <span class="emerg-nome">SAMU — Urgências médicas</span>
+      </a>
+      <a href="tel:193" class="emerg-btn" style="background:#ea580c">
+        <span class="emerg-num">193</span>
+        <span class="emerg-nome">Bombeiros — Emergências gerais</span>
+      </a>
+      <a href="tel:136" class="emerg-btn" style="background:#0B7A50">
+        <span class="emerg-num">136</span>
+        <span class="emerg-nome">Disque Saúde — SUS</span>
+      </a>
+      <a href="tel:0800722001" class="emerg-btn" style="background:#1d4ed8">
+        <span class="emerg-num">0800 722 0001</span>
+        <span class="emerg-nome">Vigilância Epidemiológica</span>
+      </a>
+      <a href="tel:188" class="emerg-btn" style="background:#7c3aed">
+        <span class="emerg-num">188</span>
+        <span class="emerg-nome">CVV — Apoio emocional</span>
+      </a>
+    </div>
+
+    <button class="btn-cancelar" onclick="document.getElementById('modalEmergencias').classList.remove('aberto')"
+      style="width:100%;margin-top:18px;padding:13px;border-radius:12px;border:none;font-size:15px;font-weight:700;cursor:pointer;background:#f3f4f6">
+      Fechar
+    </button>
+  </div>
+</div>
+
+<!-- ── MODAL LEMBRETE ───────────────────────────── -->
+<div class="modal-overlay" id="modalLembrete" onclick="fecharModalFora(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <h3 id="modalTitulo">📅 Adicionar ao Calendário</h3>
+    <p class="modal-sub">Gera um evento para seu calendário do celular (iPhone, Android, Google).</p>
+
+    <label for="lembreteVacina">Vacina</label>
+    <input type="text" id="lembreteVacina" placeholder="Ex: Dengue – 2ª dose">
+
+    <label for="lembreteData">Data</label>
+    <input type="date" id="lembreteData">
+
+    <label for="lembreteHora">Horário</label>
+    <input type="time" id="lembreteHora" value="09:00">
+
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="fecharModalLembrete()">Cancelar</button>
+      <button class="btn-salvar"   onclick="salvarLembrete()">📅 Adicionar ao Calendário</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── Estado global ──────────────────────────── */
+const chat    = document.getElementById('chat');
+const sugs    = document.getElementById('suggestions');
+const txt     = document.getElementById('txt');
+const btnSend = document.getElementById('btnSend');
+const btnMic  = document.getElementById('btnMic');
+const btnVoz  = document.getElementById('btnVoz');
+let history   = [];
+let loading   = false;
+let vozAtiva  = true;
+let micAtivo  = false;
+let audioAtual = null;
+
+/* ─── Utilidades ─────────────────────────────── */
+function hora() {
+  return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function autoSize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+}
+
+function tecla(e) {
+  if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 600) {
+    e.preventDefault();
+    enviar();
+  }
+}
+
+function rolarFim() {
+  requestAnimationFrame(() => { chat.scrollTop = chat.scrollHeight; });
+}
+
+function escapar(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+/* ─── Renderizador Markdown ──────────────────── */
+function md(raw) {
+  let t = raw
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,  '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,    '<em>$1</em>')
+    .replace(/`(.+?)`/g,      '<code>$1</code>')
+    .replace(/^---+$/gm,      '<hr>')
+    .replace(/^[-•]\s+(.+)$/gm,'<li>$1</li>')
+    .replace(/^\d+\.\s+(.+)$/gm,'<li>$1</li>');
+  t = t.replace(/(<li>[\s\S]+?<\/li>)(\n(?!<li>)|$)/g, m => '<ul>' + m + '</ul>');
+  t = t.split(/\n\n+/).map(block => {
+    const b = block.trim();
+    if (!b) return '';
+    if (/^<[hul]|^<hr/.test(b)) return b;
+    return '<p>' + b.replace(/\n/g,'<br>') + '</p>';
+  }).join('\n');
+  return t;
+}
+
+/* ─── Bolhas ─────────────────────────────────── */
+function bolhaUsuario(texto) {
+  const d = document.createElement('div');
+  d.className = 'msg user';
+  d.innerHTML = `<div class="bubble">${escapar(texto)}</div><div class="msg-time">${hora()}</div>`;
+  chat.appendChild(d);
+  rolarFim();
+}
+
+function bolhaDigitando() {
+  const d = document.createElement('div');
+  d.className = 'msg ai';
+  d.id = 'typing';
+  d.innerHTML = `<div class="bubble"><div class="typing">
+    <div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>
+  </div></div>`;
+  chat.appendChild(d);
+  rolarFim();
+}
+
+function bolhaIA(pergunta) {
+  const d = document.createElement('div');
+  d.className = 'msg ai';
+  d.innerHTML = `
+    <div class="bubble" id="resp"></div>
+    <div class="bubble-actions" id="bactions">
+      <button class="btn-action" id="btnPos" onclick="darFeedback(this,true)"  title="Útil">👍</button>
+      <button class="btn-action" id="btnNeg" onclick="darFeedback(this,false)" title="Não útil">👎</button>
+      <button class="btn-action" onclick="compartilharWhatsApp(this)" title="Compartilhar">📲 WhatsApp</button>
+      <button class="btn-action" onclick="abrirLembrete(this)" title="Lembrete de dose">⏰ Lembrete</button>
+      <button class="btn-action" id="btn-replay" style="display:none" onclick="falarBtn(this)" title="Ouvir resposta">🔊 Ouvir</button>
+    </div>
+    <div class="msg-time" id="resp-time"></div>`;
+  d.querySelector('#bactions').dataset.pergunta = pergunta;
+  chat.appendChild(d);
+  rolarFim();
+}
+
+/* ─── ACESSIBILIDADE ─────────────────────────── */
+function toggleAcessibilidade() {
+  const grande = document.body.classList.toggle('grande');
+  localStorage.setItem('acessibilidade', grande ? '1' : '0');
+  document.getElementById('btnAcesso').textContent = grande ? 'A-' : 'A+';
+}
+
+/* ─── LANDING → CHAT ────────────────────────── */
+function abrirChat() {
+  const landing = document.getElementById('landing');
+  landing.classList.add('saindo');
+  setTimeout(() => { landing.style.display = 'none'; }, 500);
+}
+
+function voltarLanding() {
+  const landing = document.getElementById('landing');
+  landing.style.display = 'flex';
+  landing.classList.remove('saindo');
+}
+
+/* ─── EMERGÊNCIAS ────────────────────────────── */
+function abrirEmergencias() {
+  document.getElementById('modalEmergencias').classList.add('aberto');
+}
+function fecharModalEmergencias(e) {
+  if (e.target === document.getElementById('modalEmergencias'))
+    document.getElementById('modalEmergencias').classList.remove('aberto');
+}
+
+/* ─── UBS LOCALIZADOR ────────────────────────── */
+function abrirUBS() {
+  const base = 'https://www.google.com/maps/search/UBS+Unidade+Básica+de+Saúde';
+  if (!navigator.geolocation) {
+    window.open(base, '_blank');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude: la, longitude: lo } = pos.coords;
+      window.open(`${base}/@${la},${lo},14z`, '_blank');
+    },
+    () => window.open(base, '_blank'),
+    { timeout: 6000 }
+  );
+}
+
+/* ─── VOZ ─────────────────────────────────────── */
+function toggleVoz() {
+  vozAtiva = !vozAtiva;
+  btnVoz.textContent = vozAtiva ? '🔊' : '🔇';
+  if (!vozAtiva && audioAtual) { audioAtual.pause(); audioAtual = null; }
+}
+
+
+function falarBtn(btn) {
+  // Se este botão está tocando → pausa
+  if (btn._playing) {
+    audioAtual && audioAtual.pause();
+    audioAtual = null;
+    btn._playing = false;
+    btn.textContent = '🔊 Ouvir';
+    return;
+  }
+
+  // Para qualquer outro áudio em andamento
+  if (audioAtual) {
+    audioAtual.pause();
+    audioAtual = null;
+    document.querySelectorAll('._btn-audio-ativo').forEach(b => {
+      b.textContent = '🔊 Ouvir';
+      b._playing = false;
+      b.classList.remove('_btn-audio-ativo');
+    });
+  }
+
+  function iniciarAudio(src) {
+    audioAtual = new Audio(src);
+    audioAtual.play();
+    btn._playing = true;
+    btn.classList.add('_btn-audio-ativo');
+    btn.textContent = '⏸ Pausar';
+    audioAtual.onended = () => {
+      audioAtual = null;
+      btn._playing = false;
+      btn.classList.remove('_btn-audio-ativo');
+      btn.textContent = '🔊 Ouvir';
+    };
+  }
+
+  const url = btn.dataset.audioUrl;
+  if (url) {
+    iniciarAudio(url);
+  } else {
+    btn.textContent = '⏳ Carregando...';
+    btn.disabled = true;
+    fetch('/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: btn.dataset.text })
+    })
+    .then(r => r.ok ? r.blob() : Promise.reject())
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+      btn.dataset.audioUrl = blobUrl;
+      btn.disabled = false;
+      iniciarAudio(blobUrl);
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = '🔊 Ouvir';
+      falar(btn.dataset.text);
+    });
+  }
+}
+
+async function falar(texto) {
+  if (!vozAtiva || !texto) return;
+  if (audioAtual) { audioAtual.pause(); audioAtual = null; }
+  try {
+    const res = await fetch('/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: texto })
+    });
+    if (!res.ok) throw new Error();
+    const url = URL.createObjectURL(await res.blob());
+    audioAtual = new Audio(url);
+    audioAtual.play();
+    audioAtual.onended = () => { audioAtual = null; URL.revokeObjectURL(url); };
+  } catch (_) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(texto.slice(0, 500));
+    u.lang = 'pt-BR'; u.rate = 0.95;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+/* ─── MICROFONE ──────────────────────────────── */
+function toggleMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Seu navegador não suporta reconhecimento de voz.\nUse Chrome ou Safari.'); return; }
+  if (micAtivo) { window._rec && window._rec.stop(); return; }
+  const rec = new SR();
+  window._rec = rec;
+  rec.lang = 'pt-BR'; rec.continuous = false; rec.interimResults = false;
+  rec.onstart = () => { micAtivo = true;  btnMic.classList.add('gravando'); };
+  rec.onend   = () => { micAtivo = false; btnMic.classList.remove('gravando'); };
+  rec.onerror = () => { micAtivo = false; btnMic.classList.remove('gravando'); };
+  rec.onresult = e => {
+    txt.value = e.results[0][0].transcript;
+    autoSize(txt);
+    enviar();
+  };
+  rec.start();
+}
+
+/* ─── FEEDBACK 👍👎 ───────────────────────────── */
+async function darFeedback(btn, avaliacao) {
+  const actions = btn.closest('.bubble-actions');
+  const pergunta = actions.dataset.pergunta || '';
+  const resposta = actions.closest('.msg.ai').querySelector('.bubble')?.innerText || '';
+  const btnPos = actions.querySelector('#btnPos') || actions.querySelectorAll('.btn-action')[0];
+  const btnNeg = actions.querySelector('#btnNeg') || actions.querySelectorAll('.btn-action')[1];
+  btnPos.disabled = true;
+  btnNeg.disabled = true;
+  btnPos.removeAttribute('id');
+  btnNeg.removeAttribute('id');
+  if (avaliacao) {
+    btnPos.classList.add('ok');
+    btnPos.textContent = '✅';
+  } else {
+    btnNeg.classList.add('nao');
+    btnNeg.textContent = '❌';
+  }
+  try {
+    await fetch('/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pergunta, resposta, avaliacao })
+    });
+  } catch (_) {}
+}
+
+/* ─── WHATSAPP ───────────────────────────────── */
+function compartilharWhatsApp(btn) {
+  const bubble = btn.closest('.msg.ai').querySelector('.bubble');
+  const texto  = (bubble?.innerText || '').slice(0, 500);
+  const msg = `💉 *VacinaFácil AI responde:*\n\n${texto}\n\n_Saiba mais: http://localhost:8000_`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+/* ─── LEMBRETE / CALENDÁRIO ──────────────────── */
+function abrirLembrete(btn) {
+  const bubble = btn ? btn.closest('.msg.ai')?.querySelector('.bubble') : null;
+  const texto  = bubble?.innerText || '';
+  const match  = texto.match(/vacina[:\s]+([\w\sÀ-ú\-]+?)[\.,\n\(]/i);
+  document.getElementById('lembreteVacina').value = match ? match[1].trim() : '';
+
+  const data = new Date();
+  data.setDate(data.getDate() + 30);
+  document.getElementById('lembreteData').value = data.toISOString().slice(0, 10);
+  document.getElementById('lembreteHora').value = '09:00';
+  document.getElementById('modalLembrete').classList.add('aberto');
+}
+
+function fecharModalLembrete() {
+  document.getElementById('modalLembrete').classList.remove('aberto');
+}
+
+function fecharModalFora(e) {
+  if (e.target === document.getElementById('modalLembrete')) fecharModalLembrete();
+}
+
+function gerarICS(vacina, data, hora) {
+  const [ano, mes, dia] = data.split('-');
+  const [h, min]        = hora.split(':');
+  const hFim            = String(parseInt(h) + 1).padStart(2, '0');
+  const stamp           = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
+  const uid             = `vacinafacil-${Date.now()}@vacinafacil.app`;
+
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//VacinaFácil AI//PT',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART:${ano}${mes}${dia}T${h}${min}00`,
+    `DTEND:${ano}${mes}${dia}T${hFim}${min}00`,
+    `SUMMARY:💉 Vacina: ${vacina}`,
+    `DESCRIPTION:Lembrete criado pelo VacinaFácil AI.\\nProcure a UBS mais próxima.`,
+    'LOCATION:UBS - Unidade Básica de Saúde',
+    'BEGIN:VALARM',
+    'TRIGGER:-PT1H',
+    'ACTION:DISPLAY',
+    `DESCRIPTION:Não esqueça sua vacina: ${vacina}`,
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+}
+
+function salvarLembrete() {
+  const vacina = document.getElementById('lembreteVacina').value.trim() || 'Vacina';
+  const data   = document.getElementById('lembreteData').value;
+  const hora   = document.getElementById('lembreteHora').value;
+  if (!data) { toast('⚠️ Escolha uma data!'); return; }
+
+  const ics  = gerarICS(vacina, data, hora);
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `vacina-${vacina.replace(/\s+/g, '-').toLowerCase()}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  fecharModalLembrete();
+  toast('📅 Arquivo aberto — adicione ao seu calendário!');
+}
+
+function verificarLembretes() { /* substituído por .ics */ }
+function fecharNotif() {
+  document.getElementById('notifBar').style.display = 'none';
+}
+
+/* ─── SUGESTÕES ──────────────────────────────── */
+function usarSugestao(el) {
+  if (loading) return;
+  txt.value = el.dataset.msg;
+  autoSize(txt);
+  enviar();
+}
+
+/* ─── ENVIAR MENSAGEM ────────────────────────── */
+async function enviar() {
+  const pergunta = txt.value.trim();
+  if (!pergunta || loading) return;
+
+  sugs.style.display = 'none';
+  txt.value = '';
+  txt.style.height = 'auto';
+  loading = true;
+  btnSend.disabled = true;
+
+  bolhaUsuario(pergunta);
+  bolhaDigitando();
+
+  try {
+    const res = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: pergunta, history })
+    });
+
+    document.getElementById('typing')?.remove();
+    bolhaIA(pergunta);
+
+    const respEl = document.getElementById('resp');
+    const timeEl = document.getElementById('resp-time');
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer   = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const payload = line.slice(6);
+        if (payload === '[DONE]') break;
+        try {
+          const obj = JSON.parse(payload);
+          if (obj.text)  { fullText += obj.text; respEl.innerHTML = md(fullText); rolarFim(); }
+          if (obj.error) { respEl.innerHTML = '<em>Desculpe, ocorreu um erro. Tente novamente.</em>'; }
+        } catch (_) {}
+      }
+    }
+
+    respEl.removeAttribute('id');
+    timeEl.removeAttribute('id');
+    timeEl.textContent = hora();
+
+    // Mostra ações da bolha
+    const actions = document.getElementById('bactions');
+    if (actions) {
+      actions.removeAttribute('id');
+      actions.style.display = 'flex';
+    }
+
+    // Áudio sob demanda — só busca quando o usuário clicar (sem gasto automático)
+    const replayBtn = document.getElementById('btn-replay');
+    if (replayBtn) {
+      replayBtn.removeAttribute('id');
+      replayBtn.dataset.text = fullText;
+      replayBtn.style.display = 'flex';
+    }
+
+    history.push({ role: 'user',      content: pergunta });
+    history.push({ role: 'assistant', content: fullText });
+    if (history.length > 20) history = history.slice(-20);
+    salvarNoHistorico(pergunta);
+
+  } catch (_) {
+    document.getElementById('typing')?.remove();
+    const d = document.createElement('div');
+    d.className = 'msg ai';
+    d.innerHTML = '<div class="bubble"><em>Sem conexão. Verifique sua internet e tente novamente.</em></div>';
+    chat.appendChild(d);
+  }
+
+  loading = false;
+  btnSend.disabled = false;
+  txt.focus();
+  rolarFim();
+}
+
+/* ─── HISTÓRICO LOCAL ────────────────────────── */
+const HIST_KEY  = 'vacinafacil_hist';
+const HIST_MAX  = 5;
+
+function salvarNoHistorico(pergunta) {
+  const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+  // evita duplicata consecutiva
+  if (hist[0] === pergunta) return;
+  hist.unshift(pergunta);
+  localStorage.setItem(HIST_KEY, JSON.stringify(hist.slice(0, HIST_MAX)));
+}
+
+function carregarHistorico() {
+  const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+  if (!hist.length) return;
+  const wrap = document.createElement('div');
+  wrap.id = 'hist-wrap';
+  wrap.style.cssText = 'padding:4px 12px 6px;flex-shrink:0;';
+  wrap.innerHTML = `
+    <p style="font-size:11px;color:#9ca3af;margin-bottom:6px;padding-left:2px">🕐 Últimas perguntas:</p>
+    <div style="display:flex;flex-wrap:wrap;gap:6px" id="hist-chips"></div>`;
+  document.querySelector('.suggestions').before(wrap);
+  const container = document.getElementById('hist-chips');
+  hist.forEach(q => {
+    const btn = document.createElement('button');
+    btn.style.cssText = 'background:#f3f4f6;border:1px solid #e5e7eb;border-radius:16px;padding:6px 12px;font-size:12px;color:#374151;cursor:pointer;white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis;font-family:inherit';
+    btn.title = q;
+    btn.textContent = q.length > 40 ? q.slice(0, 38) + '…' : q;
+    btn.onclick = () => { if (!loading) { txt.value = q; autoSize(txt); enviar(); } };
+    container.appendChild(btn);
+  });
+}
+
+/* ─── INIT ───────────────────────────────────── */
+// Acessibilidade salva
+if (localStorage.getItem('acessibilidade') === '1') {
+  document.body.classList.add('grande');
+  document.getElementById('btnAcesso').textContent = 'A-';
+}
+
+// Histórico local
+carregarHistorico();
+
+// Verifica lembretes ao abrir
+verificarLembretes();
+
+// Registra Service Worker (PWA)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
