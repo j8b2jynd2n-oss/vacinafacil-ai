@@ -696,6 +696,52 @@ body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
   .lp-cta { padding: 15px; font-size: 16px; }
 }
 
+/* ── BOTÃO UBS DESTACADO ─────────────────── */
+.header-btn.ubs-btn {
+  background: rgba(255,255,255,.92) !important;
+  color: #085C3C !important;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.header-btn.ubs-btn:hover { background: #fff !important; }
+
+/* ── CTA UBS INLINE (inject em respostas) ── */
+.ubs-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+}
+.ubs-cta span {
+  font-size: 13px;
+  color: #065f46;
+  font-weight: 500;
+  flex: 1;
+  min-width: 140px;
+}
+.ubs-cta-btn {
+  background: #0B7A50;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.ubs-cta-btn:hover { background: #085C3C; }
+
 /* ── BANNER LGPD ─────────────────────────── */
 #lgpd {
   position: fixed;
@@ -874,7 +920,7 @@ body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
     <p>Orientação vacinal · SUS</p>
   </div>
   <button id="btnAcesso" class="header-btn" onclick="toggleAcessibilidade()" title="Aumentar texto">A+</button>
-  <button class="header-btn" onclick="abrirUBS()" title="Encontrar UBS próxima">📍 UBS</button>
+  <button class="header-btn ubs-btn" onclick="abrirUBS()" title="Encontrar UBS próxima">📍 UBS</button>
   <button class="header-btn" style="background:rgba(239,68,68,.7)" onclick="abrirEmergencias()" title="Números de emergência">🚨</button>
   <div class="header-status">
     <div class="dot-online"></div>
@@ -1139,6 +1185,28 @@ function fecharModalEmergencias(e) {
 }
 
 /* ─── UBS LOCALIZADOR ────────────────────────── */
+const UBS_GATILHOS = [
+  'ubs', 'posto de saúde', 'unidade básica', 'unidade de saúde',
+  'procure um profissional', 'compareça', 'dirija-se', 'agendamento',
+  'vacine-se', 'cartão de vacinação', 'calendário vacinal'
+];
+
+function injetarLinkUBS(bubbleEl, texto) {
+  if (!bubbleEl) return;
+  // Evita duplicata se chamado mais de uma vez
+  if (bubbleEl.querySelector('.ubs-cta')) return;
+  const t = texto.toLowerCase();
+  const deveInjetar = UBS_GATILHOS.some(k => t.includes(k));
+  if (!deveInjetar) return;
+
+  const div = document.createElement('div');
+  div.className = 'ubs-cta';
+  div.innerHTML =
+    '<span>💉 Vacinas do SUS são gratuitas</span>' +
+    '<button class="ubs-cta-btn" onclick="abrirUBS()">📍 Encontrar UBS próxima</button>';
+  bubbleEl.appendChild(div);
+}
+
 function abrirUBS() {
   const base = 'https://www.google.com/maps/search/UBS+Unidade+Básica+de+Saúde';
   if (!navigator.geolocation) {
@@ -1453,6 +1521,9 @@ async function enviar() {
       replayBtn.dataset.text = fullText;
       replayBtn.style.display = 'flex';
     }
+
+    // Injeta link do Maps quando resposta menciona UBS / posto de saúde
+    injetarLinkUBS(respEl, fullText);
 
     history.push({ role: 'user',      content: pergunta });
     history.push({ role: 'assistant', content: fullText });
