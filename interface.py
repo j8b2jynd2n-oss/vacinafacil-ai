@@ -14,8 +14,8 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 import anthropic
 from openai import OpenAI
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
+from fastapi import FastAPI, Form, HTTPException, Query
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse
 from pydantic import BaseModel
 
 load_dotenv(override=True)
@@ -583,6 +583,402 @@ def admin(senha: str = Query("")):
 </div>
 </body>
 </html>"""
+
+
+# ── Curadoria ─────────────────────────────────────────────────
+
+def _esc(s) -> str:
+    return (s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+def _tf(name: str, label: str, val, rows: int = 3) -> str:
+    return (
+        f"<div class='cf'><label class='cl'>{label}</label>"
+        f"<textarea name='{name}' rows='{rows}' class='ca'>{_esc(val)}</textarea></div>"
+    )
+
+
+@app.get("/curadoria", response_class=HTMLResponse)
+def curadoria(senha: str = Query(""), msg: str = Query("")):
+    if senha != ADMIN_PASSWORD:
+        return HTMLResponse(
+            "<!DOCTYPE html><html><body style='font-family:system-ui;padding:40px;text-align:center'>"
+            "<h2>🔒 Acesso negado</h2><p>Use <code>?senha=suasenha</code> na URL.</p></body></html>",
+            status_code=403,
+        )
+
+    vacinas: list = []
+    faqs:    list = []
+    mitos:   list = []
+
+    try:
+        r = supabase_admin.table("vacinas").select(
+            "id,nome_da_vacina,disponivel_no_sus,"
+            "resposta_padrao_sugerida,esquema_de_vacinacao,"
+            "contraindicacoes_absolutas,efeitos_colaterais_comuns,"
+            "precaucoes,duracao_da_protecao,eficacia_numerica,observacoes_internas"
+        ).order("id").execute()
+        vacinas = r.data or []
+    except Exception:
+        pass
+
+    try:
+        r = supabase_admin.table("faq").select("id,pergunta,resposta").order("pergunta").execute()
+        faqs = r.data or []
+    except Exception:
+        pass
+
+    try:
+        r = supabase_admin.table("mitos").select(
+            "id,mito_como_circula,resposta_baseada_em_evidencia"
+        ).order("mito_como_circula").execute()
+        mitos = r.data or []
+    except Exception:
+        pass
+
+    # ── HTML fragments ──────────────────────────────────────────
+    def vac_rows() -> str:
+        html = ""
+        for v in vacinas:
+            vid  = _esc(v.get("id", ""))
+            nome = _esc(v.get("nome_da_vacina", ""))
+            sus  = v.get("disponivel_no_sus") or ""
+            sus_badge = (
+                f"<span style='color:#059669;font-weight:600'>{_esc(sus)}</span>"
+                if sus else "<span style='color:#9ca3af'>—</span>"
+            )
+            fields_html = (
+                _tf("resposta_padrao_sugerida", "Resposta padrão sugerida", v.get("resposta_padrao_sugerida"), 5) +
+                _tf("esquema_de_vacinacao",     "Esquema de vacinação",     v.get("esquema_de_vacinacao"),     3) +
+                _tf("contraindicacoes_absolutas","Contraindicações absolutas",v.get("contraindicacoes_absolutas"),3) +
+                _tf("efeitos_colaterais_comuns", "Efeitos colaterais comuns", v.get("efeitos_colaterais_comuns"), 3) +
+                _tf("precaucoes",               "Precauções",               v.get("precaucoes"),               2) +
+                _tf("duracao_da_protecao",      "Duração da proteção",      v.get("duracao_da_protecao"),      1) +
+                _tf("eficacia_numerica",        "Eficácia (%)",             v.get("eficacia_numerica"),        1) +
+                _tf("observacoes_internas",     "Observações internas",     v.get("observacoes_internas"),     2)
+            )
+            html += (
+                f"<tr>"
+                f"<td><strong>{nome}</strong></td>"
+                f"<td>{sus_badge}</td>"
+                f"<td><button type='button' class='ebtn' data-id='{vid}'>✏️ Editar</button></td>"
+                f"</tr>"
+                f"<tr class='erow' data-id='{vid}'>"
+                f"<td colspan='3' style='padding:0;background:#f8fffe'>"
+                f"<form method='POST' action='/curadoria/salvar-vacina'>"
+                f"<input type='hidden' name='senha' value='{senha}'>"
+                f"<input type='hidden' name='vid' value='{vid}'>"
+                f"<div class='efhdr'><strong>✏️ {nome}</strong>"
+                f"<button type='submit' class='sbtn'>💾 Salvar alterações</button></div>"
+                f"<div class='efields'>{fields_html}</div>"
+                f"</form></td></tr>"
+            )
+        return html
+
+    def faq_rows() -> str:
+        html = ""
+        for f in faqs:
+            fid  = _esc(f.get("id", ""))
+            perg = _esc(f.get("pergunta", ""))
+            html += (
+                f"<tr>"
+                f"<td style='max-width:500px'>{perg}</td>"
+                f"<td style='white-space:nowrap'>"
+                f"<button type='button' class='ebtn' data-faq='{fid}'>✏️</button> "
+                f"<a href='/curadoria/del-faq?id={fid}&senha={senha}'"
+                f"   onclick=\"return confirm('Deletar esta FAQ?')\" class='del-lnk'>🗑️</a>"
+                f"</td></tr>"
+                f"<tr class='efrow' data-faq='{fid}'>"
+                f"<td colspan='2' style='padding:0;background:#f8fffe'>"
+                f"<form method='POST' action='/curadoria/salvar-faq'>"
+                f"<input type='hidden' name='senha' value='{senha}'>"
+                f"<input type='hidden' name='fid' value='{fid}'>"
+                f"<div class='efields'>"
+                f"{_tf('pergunta','Pergunta',f.get('pergunta'),2)}"
+                f"{_tf('resposta','Resposta',f.get('resposta'),5)}"
+                f"</div>"
+                f"<div style='padding:10px 16px;text-align:right'>"
+                f"<button type='submit' class='sbtn'>💾 Salvar</button></div>"
+                f"</form></td></tr>"
+            )
+        return html
+
+    def mito_rows() -> str:
+        html = ""
+        for m in mitos:
+            mid  = _esc(m.get("id", ""))
+            mito = _esc(m.get("mito_como_circula", ""))
+            html += (
+                f"<tr>"
+                f"<td style='max-width:500px'>{mito}</td>"
+                f"<td><button type='button' class='ebtn' data-mito='{mid}'>✏️</button></td>"
+                f"</tr>"
+                f"<tr class='emrow' data-mito='{mid}'>"
+                f"<td colspan='2' style='padding:0;background:#f8fffe'>"
+                f"<form method='POST' action='/curadoria/salvar-mito'>"
+                f"<input type='hidden' name='senha' value='{senha}'>"
+                f"<input type='hidden' name='mid' value='{mid}'>"
+                f"<div class='efields'>"
+                f"{_tf('mito_como_circula','Mito (como circula)',m.get('mito_como_circula'),2)}"
+                f"{_tf('resposta_baseada_em_evidencia','Resposta baseada em evidência',m.get('resposta_baseada_em_evidencia'),5)}"
+                f"</div>"
+                f"<div style='padding:10px 16px;text-align:right'>"
+                f"<button type='submit' class='sbtn'>💾 Salvar</button></div>"
+                f"</form></td></tr>"
+            )
+        return html
+
+    vrows  = vac_rows()
+    frows  = faq_rows()
+    mrows  = mito_rows()
+    msg_html = f"<div class='msg-ok'>✅ {_esc(msg)}</div>" if msg else ""
+
+    css = """<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f0fdf4;color:#1a1a1a;min-height:100vh}
+.wrap{max-width:1000px;margin:0 auto;padding:24px}
+h1{color:#085C3C;font-size:21px;margin-bottom:2px}
+.sub{color:#6b7280;font-size:13px;margin-bottom:18px}
+.sub a{color:#0B7A50;text-decoration:none;font-weight:600}
+.warn{background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:11px 16px;font-size:13px;color:#92400e;margin-bottom:18px}
+.warn code{background:#fde68a;padding:2px 6px;border-radius:4px}
+.msg-ok{background:#d1fae5;border:1px solid #6ee7b7;border-radius:10px;padding:11px 16px;font-size:13px;color:#065f46;margin-bottom:18px;font-weight:600}
+.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.tab{background:#fff;border:2px solid #e5e7eb;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;color:#374151;font-family:inherit}
+.tab.active{background:#0B7A50;color:#fff;border-color:#0B7A50}
+.section{display:none}.section.show{display:block}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.07)}
+th{background:#0B7A50;color:#fff;padding:10px 14px;text-align:left;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+td{padding:10px 14px;font-size:13px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+tr:last-child td{border:none}
+tr:hover td{background:#f9fafb}
+.ebtn{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+.ebtn:hover{background:#e5e7eb}
+.del-lnk{font-size:14px;text-decoration:none;opacity:.6}
+.del-lnk:hover{opacity:1}
+.erow,.efrow,.emrow{display:none}
+.efhdr{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#e6f4ee;border-bottom:1px solid #bbf7d0;flex-wrap:wrap;gap:8px}
+.efhdr strong{font-size:14px;color:#085C3C}
+.sbtn{background:#0B7A50;color:#fff;border:none;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.sbtn:hover{background:#085C3C}
+.efields{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.efields{grid-template-columns:1fr}}
+.cf{display:flex;flex-direction:column;gap:4px}
+.cl{font-size:12px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.3px}
+.ca{border:1px solid #d1d5db;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;background:#fff}
+.ca:focus{outline:none;border-color:#0B7A50;box-shadow:0 0 0 3px rgba(11,122,80,.15)}
+.new-section{background:#fff;border-radius:14px;padding:20px;margin-top:20px;box-shadow:0 1px 6px rgba(0,0,0,.07)}
+.new-section h3{font-size:14px;color:#085C3C;margin-bottom:14px;font-weight:700}
+.new-fields{display:grid;grid-template-columns:1fr;gap:12px}
+</style>"""
+
+    script = """<script>
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('show'));
+  document.querySelector('.tab[data-section="' + id + '"]').classList.add('active');
+  document.getElementById(id).classList.add('show');
+}
+document.addEventListener('DOMContentLoaded', () => {
+  // Vacinas
+  document.querySelectorAll('.ebtn[data-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const row = document.querySelector('.erow[data-id="' + id + '"]');
+      const open = row.style.display === 'table-row';
+      document.querySelectorAll('.erow').forEach(r => r.style.display = 'none');
+      document.querySelectorAll('.ebtn[data-id]').forEach(b => b.textContent = '✏️ Editar');
+      if (!open) {
+        row.style.display = 'table-row';
+        btn.textContent = '✖ Fechar';
+        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  });
+  // FAQ
+  document.querySelectorAll('.ebtn[data-faq]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.faq;
+      const row = document.querySelector('.efrow[data-faq="' + id + '"]');
+      const open = row.style.display === 'table-row';
+      document.querySelectorAll('.efrow').forEach(r => r.style.display = 'none');
+      document.querySelectorAll('.ebtn[data-faq]').forEach(b => b.textContent = '✏️');
+      if (!open) { row.style.display = 'table-row'; btn.textContent = '✖'; row.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+    });
+  });
+  // Mitos
+  document.querySelectorAll('.ebtn[data-mito]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.mito;
+      const row = document.querySelector('.emrow[data-mito="' + id + '"]');
+      const open = row.style.display === 'table-row';
+      document.querySelectorAll('.emrow').forEach(r => r.style.display = 'none');
+      document.querySelectorAll('.ebtn[data-mito]').forEach(b => b.textContent = '✏️');
+      if (!open) { row.style.display = 'table-row'; btn.textContent = '✖'; row.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+    });
+  });
+  // Tabs
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.section));
+  });
+  // URL hash para abrir aba correta
+  const hash = location.hash.replace('#','');
+  if (['sec-faq','sec-mitos'].includes(hash)) switchTab(hash);
+  else document.getElementById('sec-vac').classList.add('show');
+});
+</script>"""
+
+    return f"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Curadoria — VacinaFácil AI</title>{css}</head>
+<body><div class="wrap">
+<h1>✏️ VacinaFácil AI — Curadoria de Conteúdo</h1>
+<p class="sub">
+  {len(vacinas)} vacinas &nbsp;·&nbsp; {len(faqs)} FAQs &nbsp;·&nbsp; {len(mitos)} mitos &nbsp;·&nbsp;
+  <a href="/admin?senha={senha}">📊 Dashboard</a> &nbsp;·&nbsp;
+  <a href="/">💬 Chat</a>
+</p>
+{msg_html}
+<div class="warn">⚠️ Após editar qualquer conteúdo, rode <code>python3 gerar_embeddings.py</code>
+no servidor para atualizar a busca semântica.</div>
+
+<div class="tabs">
+  <button class="tab" data-section="sec-vac">💉 Vacinas ({len(vacinas)})</button>
+  <button class="tab" data-section="sec-faq">💬 FAQ ({len(faqs)})</button>
+  <button class="tab" data-section="sec-mitos">🚫 Mitos ({len(mitos)})</button>
+</div>
+
+<div id="sec-vac" class="section">
+  <table>
+    <thead><tr><th>Vacina</th><th>Disponível SUS</th><th style="width:100px"></th></tr></thead>
+    <tbody>{vrows if vrows else "<tr><td colspan='3' style='text-align:center;color:#9ca3af;padding:20px'>Sem vacinas cadastradas.</td></tr>"}</tbody>
+  </table>
+</div>
+
+<div id="sec-faq" class="section">
+  <table>
+    <thead><tr><th>Pergunta</th><th style="width:80px"></th></tr></thead>
+    <tbody>{frows if frows else "<tr><td colspan='2' style='text-align:center;color:#9ca3af;padding:20px'>Sem FAQs cadastradas.</td></tr>"}</tbody>
+  </table>
+  <div class="new-section">
+    <h3>➕ Nova pergunta frequente</h3>
+    <form method="POST" action="/curadoria/salvar-faq">
+      <input type="hidden" name="senha" value="{senha}">
+      <input type="hidden" name="fid" value="">
+      <div class="new-fields">
+        {_tf("pergunta","Pergunta",None,2)}
+        {_tf("resposta","Resposta",None,5)}
+      </div>
+      <div style="margin-top:12px"><button type="submit" class="sbtn">💾 Adicionar FAQ</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="sec-mitos" class="section">
+  <table>
+    <thead><tr><th>Mito</th><th style="width:60px"></th></tr></thead>
+    <tbody>{mrows if mrows else "<tr><td colspan='2' style='text-align:center;color:#9ca3af;padding:20px'>Sem mitos cadastrados.</td></tr>"}</tbody>
+  </table>
+</div>
+</div>
+{script}
+</body></html>"""
+
+
+@app.post("/curadoria/salvar-vacina")
+def curadoria_salvar_vacina(
+    senha:                      str = Form(...),
+    vid:                        str = Form(...),
+    resposta_padrao_sugerida:   str = Form(""),
+    esquema_de_vacinacao:       str = Form(""),
+    contraindicacoes_absolutas: str = Form(""),
+    efeitos_colaterais_comuns:  str = Form(""),
+    precaucoes:                 str = Form(""),
+    duracao_da_protecao:        str = Form(""),
+    eficacia_numerica:          str = Form(""),
+    observacoes_internas:       str = Form(""),
+):
+    if senha != ADMIN_PASSWORD:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    try:
+        supabase_admin.table("vacinas").update({
+            "resposta_padrao_sugerida":   resposta_padrao_sugerida   or None,
+            "esquema_de_vacinacao":       esquema_de_vacinacao       or None,
+            "contraindicacoes_absolutas": contraindicacoes_absolutas or None,
+            "efeitos_colaterais_comuns":  efeitos_colaterais_comuns  or None,
+            "precaucoes":                 precaucoes                 or None,
+            "duracao_da_protecao":        duracao_da_protecao        or None,
+            "eficacia_numerica":          eficacia_numerica          or None,
+            "observacoes_internas":       observacoes_internas       or None,
+        }).eq("id", vid).execute()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return RedirectResponse(
+        f"/curadoria?senha={senha}&msg=Vacina+{vid}+atualizada+com+sucesso",
+        status_code=303,
+    )
+
+
+@app.post("/curadoria/salvar-faq")
+def curadoria_salvar_faq(
+    senha:    str = Form(...),
+    fid:      str = Form(""),
+    pergunta: str = Form(""),
+    resposta: str = Form(""),
+):
+    if senha != ADMIN_PASSWORD:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    if not pergunta.strip() or not resposta.strip():
+        raise HTTPException(status_code=400, detail="Pergunta e resposta são obrigatórias")
+    try:
+        if fid:
+            supabase_admin.table("faq").update(
+                {"pergunta": pergunta.strip(), "resposta": resposta.strip()}
+            ).eq("id", fid).execute()
+            msg = "FAQ+atualizada+com+sucesso"
+        else:
+            supabase_admin.table("faq").insert(
+                {"pergunta": pergunta.strip(), "resposta": resposta.strip()}
+            ).execute()
+            msg = "Nova+FAQ+adicionada+com+sucesso"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return RedirectResponse(f"/curadoria?senha={senha}&msg={msg}#sec-faq", status_code=303)
+
+
+@app.post("/curadoria/salvar-mito")
+def curadoria_salvar_mito(
+    senha:                        str = Form(...),
+    mid:                          str = Form(""),
+    mito_como_circula:            str = Form(""),
+    resposta_baseada_em_evidencia: str = Form(""),
+):
+    if senha != ADMIN_PASSWORD:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    try:
+        supabase_admin.table("mitos").update({
+            "mito_como_circula":             mito_como_circula.strip()             or None,
+            "resposta_baseada_em_evidencia": resposta_baseada_em_evidencia.strip() or None,
+        }).eq("id", mid).execute()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return RedirectResponse(
+        f"/curadoria?senha={senha}&msg=Mito+atualizado+com+sucesso#sec-mitos",
+        status_code=303,
+    )
+
+
+@app.get("/curadoria/del-faq")
+def curadoria_del_faq(id: str = Query(""), senha: str = Query("")):
+    if senha != ADMIN_PASSWORD:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    try:
+        supabase_admin.table("faq").delete().eq("id", id).execute()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return RedirectResponse(
+        f"/curadoria?senha={senha}&msg=FAQ+removida#sec-faq", status_code=303
+    )
 
 
 if __name__ == "__main__":

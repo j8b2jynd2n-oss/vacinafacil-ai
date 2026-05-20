@@ -696,6 +696,34 @@ body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
   .lp-cta { padding: 15px; font-size: 16px; }
 }
 
+/* Visualmente oculto mas lido por leitores de tela (e-MAG) */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ── e-MAG ACESSIBILIDADE ─────────────────── */
+/* Skip link (Tab na primeira vez exibe) */
+.skip-link {
+  position: absolute;
+  top: -999px; left: -999px;
+  background: #085C3C; color: #fff;
+  padding: 10px 18px; font-size: 14px; font-weight: 700;
+  border-radius: 0 0 8px 0; z-index: 99999; text-decoration: none;
+}
+.skip-link:focus { top: 0; left: 0; }
+
+/* Foco visível em todos os elementos interativos */
+:focus-visible {
+  outline: 3px solid #FFD700;
+  outline-offset: 2px;
+}
+button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visible {
+  outline: 3px solid #FFD700;
+  outline-offset: 2px;
+}
+
 /* ── BOTÃO UBS DESTACADO ─────────────────── */
 .header-btn.ubs-btn {
   background: rgba(255,255,255,.92) !important;
@@ -911,17 +939,20 @@ body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
   <button onclick="fecharNotif()" aria-label="Fechar">✕</button>
 </div>
 
+<!-- Skip navigation (e-MAG 2.1) -->
+<a href="#chat-input" class="skip-link">Pular para o campo de perguntas</a>
+
 <!-- ── HEADER ──────────────────────────────────── -->
-<header class="header">
-  <button class="header-btn" onclick="voltarLanding()" title="Voltar" style="font-size:20px;padding:4px 8px">‹</button>
+<header class="header" role="banner">
+  <button class="header-btn" onclick="voltarLanding()" title="Voltar" aria-label="Voltar à tela inicial" style="font-size:20px;padding:4px 8px">‹</button>
   <div class="header-avatar">💉</div>
   <div class="header-info">
     <h1>VacinaFácil AI</h1>
     <p>Orientação vacinal · SUS</p>
   </div>
-  <button id="btnAcesso" class="header-btn" onclick="toggleAcessibilidade()" title="Aumentar texto">A+</button>
-  <button class="header-btn ubs-btn" onclick="abrirUBS()" title="Encontrar UBS próxima">📍 UBS</button>
-  <button class="header-btn" style="background:rgba(239,68,68,.7)" onclick="abrirEmergencias()" title="Números de emergência">🚨</button>
+  <button id="btnAcesso" class="header-btn" onclick="toggleAcessibilidade()" title="Aumentar texto" aria-label="Aumentar tamanho do texto" aria-pressed="false">A+</button>
+  <button class="header-btn ubs-btn" onclick="abrirUBS()" title="Encontrar UBS próxima" aria-label="Encontrar Unidade Básica de Saúde próxima no mapa">📍 UBS</button>
+  <button class="header-btn" style="background:rgba(239,68,68,.7)" onclick="abrirEmergencias()" title="Números de emergência" aria-label="Ver números de emergência: SAMU e Bombeiros">🚨</button>
   <div class="header-status">
     <div class="dot-online"></div>
     Online
@@ -929,7 +960,7 @@ body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
 </header>
 
 <!-- ── CHAT ────────────────────────────────────── -->
-<div class="chat" id="chat">
+<div class="chat" id="chat" role="log" aria-live="polite" aria-label="Histórico de conversa com o assistente" aria-relevant="additions">
   <div class="msg ai">
     <div class="bubble">
       <strong>Olá! Sou o VacinaFácil AI.</strong><br><br>
@@ -970,10 +1001,13 @@ body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
 </div>
 
 <!-- ── INPUT ────────────────────────────────────── -->
-<div class="input-bar">
+<div class="input-bar" role="form" aria-label="Formulário de pergunta">
   <div class="input-wrap">
-    <textarea id="txt" rows="1"
+    <label for="txt" class="sr-only">Digite sua dúvida sobre vacinas</label>
+    <textarea id="txt" id="chat-input" rows="1"
       placeholder="Digite sua dúvida sobre vacinas..."
+      aria-label="Campo de pergunta — pressione Enter para enviar"
+      autocomplete="off"
       oninput="autoSize(this)"
       onkeydown="tecla(event)"></textarea>
   </div>
