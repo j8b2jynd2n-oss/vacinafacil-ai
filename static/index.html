@@ -669,6 +669,32 @@ body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
 }
 @keyframes toastIn  { from { opacity:0; transform: translateX(-50%) translateY(12px); } to { opacity:1; transform: translateX(-50%); } }
 @keyframes toastOut { to   { opacity:0; transform: translateX(-50%) translateY(6px); } }
+
+/* ── MOBILE: HEADER ──────────────────────────── */
+@media (max-width: 420px) {
+  .header { gap: 6px; padding: 10px 10px env(safe-area-inset-top, 0); }
+  .header-avatar { width: 36px; height: 36px; font-size: 18px; }
+  .header-info h1 { font-size: 14px; }
+  .header-info p  { display: none; }
+  .header-status  { display: none; }
+  .header-btn { padding: 5px 8px; font-size: 12px; }
+}
+
+/* ── MOBILE: LANDING CTA ACIMA DO FOLD ───────── */
+@media (max-height: 820px) {
+  #landing { gap: 14px; padding: 28px 20px 28px; }
+  .lp-hero { gap: 10px; padding-top: 0; }
+  .lp-icone { width: 64px; height: 64px; font-size: 36px; border-radius: 20px; }
+  .lp-titulo { font-size: 26px; }
+  .lp-subtitulo { font-size: 14px; }
+  .lp-badge { font-size: 12px; padding: 5px 12px; }
+  .lp-cards { margin: 0; gap: 8px; }
+  .lp-card { padding: 12px 14px; }
+  .lp-card-icone { font-size: 24px; width: 38px; }
+  .lp-card-texto h4 { font-size: 14px; }
+  .lp-card-texto p  { font-size: 12px; }
+  .lp-cta { padding: 15px; font-size: 16px; }
+}
 </style>
 </head>
 <body>
