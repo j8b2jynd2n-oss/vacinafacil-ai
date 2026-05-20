@@ -1,35 +1,59 @@
-const CACHE = 'vacinafacil-v1';
-const SHELL = ['/', '/manifest.json', '/icon.svg'];
+// Bump a versão sempre que o HTML mudar — força limpeza do cache antigo
+const CACHE = 'vacinafacil-v3';
+
+// Apenas assets verdadeiramente estáticos ficam em cache
+const STATIC = ['/manifest.json', '/icon.svg'];
+
+// Rotas que nunca devem ser cacheadas
+const NO_CACHE = ['/chat', '/tts', '/feedback', '/admin', '/curadoria', '/privacidade'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll(SHELL))
+      .then(c => c.addAll(STATIC))
       .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', e => {
+  // Apaga todos os caches antigos (v1, v2, …)
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(k => k !== CACHE).map(k => caches.delete(k))
-      ))
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
-  // Não cacheia chamadas de API
   if (e.request.method !== 'GET') return;
-  if (['/chat', '/tts', '/feedback', '/admin'].some(p => url.pathname.startsWith(p))) return;
 
+  const path = new URL(e.request.url).pathname;
+
+  // API e páginas dinâmicas: nunca cacheia, vai direto na rede
+  if (NO_CACHE.some(p => path.startsWith(p))) return;
+
+  // HTML principal (/): network-first — sempre busca versão mais recente
+  // fallback para cache se offline
+  if (path === '/') {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          if (res.ok) {
+            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+          }
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // Assets estáticos: cache-first
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(res => {
-        if (res.ok && SHELL.includes(url.pathname)) {
+        if (res.ok && STATIC.includes(path)) {
           caches.open(CACHE).then(c => c.put(e.request, res.clone()));
         }
         return res;
