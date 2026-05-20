@@ -695,6 +695,44 @@ body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
   .lp-card-texto p  { font-size: 12px; }
   .lp-cta { padding: 15px; font-size: 16px; }
 }
+
+/* ── BANNER LGPD ─────────────────────────── */
+#lgpd {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 9999;
+  background: rgba(8, 92, 60, 0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  line-height: 1.5;
+  transform: translateY(100%);
+  transition: transform .4s ease;
+  border-top: 1px solid rgba(255,255,255,.15);
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+}
+#lgpd.visivel { transform: translateY(0); }
+#lgpd p { flex: 1; min-width: 180px; }
+#lgpd a { color: #a7f3d0; text-decoration: underline; }
+#lgpd-ok {
+  background: #fff;
+  color: #085C3C;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+}
+#lgpd-ok:hover { background: #d1fae5; }
 </style>
 </head>
 <body>
@@ -1485,6 +1523,25 @@ verificarLembretes();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
+
+/* ─── BANNER LGPD ────────────────────────── */
+function aceitarLGPD() {
+  localStorage.setItem('lgpd_aceito', '1');
+  const el = document.getElementById('lgpd');
+  if (el) { el.style.transition = 'transform .3s ease'; el.classList.remove('visivel'); }
+}
+if (!localStorage.getItem('lgpd_aceito')) {
+  setTimeout(() => document.getElementById('lgpd')?.classList.add('visivel'), 900);
+}
 </script>
+
+<!-- Banner LGPD (Lei 13.709/2018) -->
+<div id="lgpd" role="dialog" aria-label="Aviso de privacidade">
+  <p>🔒 <strong>VacinaFácil AI</strong> não coleta dados pessoais identificáveis.
+  Perguntas são armazenadas de forma <strong>anônima</strong> para melhorar o serviço.
+  <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a></p>
+  <button id="lgpd-ok" onclick="aceitarLGPD()">Entendi</button>
+</div>
+
 </body>
 </html>
