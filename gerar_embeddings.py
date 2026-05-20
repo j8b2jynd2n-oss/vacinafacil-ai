@@ -17,13 +17,13 @@ load_dotenv(override=True)
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Mapeamento: tabela → campos de título e conteúdo
+# Mapeamento: tabela → campos de título e conteúdo (nomes reais das colunas)
 TABELAS = {
-    "vacinas":       ("nome",    "conteudo"),
-    "faq":           ("pergunta","resposta"),
-    "mitos":         ("mito",    "esclarecimento"),
-    "doencas":       ("nome",    "conteudo"),
-    "pos_exposicao": ("situacao","protocolo"),
+    "vacinas":       ("nome_da_vacina",    "resposta_padrao_sugerida"),
+    "faq":           ("pergunta",          "resposta"),
+    "mitos":         ("mito_como_circula", "resposta_baseada_em_evidencia"),
+    "doencas":       ("nome_da_doenca",    "resumo_linguagem_simples"),
+    "pos_exposicao": ("tipo_de_exposicao", "esquema_de_profilaxia"),
 }
 
 
