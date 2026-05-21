@@ -727,6 +727,82 @@ body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
   .lp-cta { padding: 15px; font-size: 16px; }
 }
 
+/* ── LP REDESIGN v2 ──────────────────────── */
+.lp-tagline {
+  font-size: 13px;
+  color: rgba(255,255,255,.6);
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.lp-hint {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,.42);
+  margin-top: 10px;
+  line-height: 1.6;
+}
+/* Preview de conversa real */
+.lp-preview {
+  width: 100%; max-width: 400px;
+  background: rgba(0,0,0,.2);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px;
+  padding: 16px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lp-pmsg {
+  max-width: 84%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.lp-pmsg.u {
+  align-self: flex-end;
+  background: rgba(255,255,255,.22);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.lp-pmsg.a {
+  align-self: flex-start;
+  background: rgba(255,255,255,.93);
+  color: #1a1a1a;
+  border-bottom-left-radius: 4px;
+}
+.lp-pmsg.a strong { color: #085C3C; }
+.lp-preview-label {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255,255,255,.35);
+  margin-top: 2px;
+  letter-spacing: .2px;
+}
+/* Barra de confiança */
+.lp-trust {
+  display: flex;
+  width: 100%; max-width: 400px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.lp-trust-item {
+  flex: 1; padding: 14px 8px; text-align: center;
+  border-right: 1px solid rgba(255,255,255,.12);
+}
+.lp-trust-item:last-child { border-right: none; }
+.lp-trust-num   { display:block; color: #a7f3d0; font-size: 20px; font-weight: 800; line-height: 1; }
+.lp-trust-label { display:block; color: rgba(255,255,255,.6); font-size: 11px; margin-top: 3px; }
+
+@media (max-height: 820px) {
+  .lp-preview { padding: 12px 10px 8px; gap: 6px; }
+  .lp-pmsg    { font-size: 12.5px; padding: 8px 12px; }
+}
+
 /* Visualmente oculto mas lido por leitores de tela (e-MAG) */
 .sr-only {
   position: absolute; width: 1px; height: 1px;
@@ -937,74 +1013,50 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
 
   <!-- Hero -->
   <div class="lp-hero">
-    <div class="lp-icone">💉</div>
-    <div class="lp-titulo">VacinaFácil <span>AI</span></div>
+    <p class="lp-tagline">💉 VacinaFácil AI</p>
+    <div class="lp-titulo">
+      Tudo sobre vacinas,<br>
+      <span>sem enrolação.</span>
+    </div>
     <p class="lp-subtitulo">
-      Tire suas dúvidas sobre vacinas<br>
-      <strong style="color:#a7f3d0">de graça e sem sair de casa.</strong>
+      Calendário do SUS, efeitos, doses e campanhas ativas —
+      resposta na hora, de graça, sem cadastro.
     </p>
-    <div class="lp-badge">🇧🇷 Baseado no calendário oficial do SUS</div>
   </div>
 
-  <!-- Cards de funcionalidades -->
-  <div class="lp-cards">
-    <div class="lp-card">
-      <div class="lp-card-icone">💬</div>
-      <div class="lp-card-texto">
-        <h4>Pergunte do jeito que quiser</h4>
-        <p>Escreva ou fale sua dúvida. A IA entende e responde na hora, de forma simples.</p>
-      </div>
-    </div>
-    <div class="lp-card">
-      <div class="lp-card-icone">📋</div>
-      <div class="lp-card-texto">
-        <h4>Informação oficial do Ministério da Saúde</h4>
-        <p>Calendário de vacinas atualizado para crianças, adultos, idosos e grávidas.</p>
-      </div>
-    </div>
-    <div class="lp-card">
-      <div class="lp-card-icone">📍</div>
-      <div class="lp-card-texto">
-        <h4>Encontre a UBS mais próxima</h4>
-        <p>Localize o posto de saúde mais perto de você e agende sua vacina.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- CTA logo após os cards -->
+  <!-- CTA principal -->
   <div style="width:100%;max-width:400px">
     <button class="lp-cta" onclick="abrirChat()">
-      💬 Começar agora
+      Tirar minha dúvida agora →
     </button>
+    <p class="lp-hint">Sem cadastro &nbsp;·&nbsp; Funciona no celular &nbsp;·&nbsp; 100% gratuito</p>
   </div>
 
-  <hr class="lp-divider">
+  <!-- Preview de conversa — mostra o produto em ação -->
+  <div class="lp-preview" aria-hidden="true">
+    <div class="lp-pmsg u">Posso tomar vacina estando grávida?</div>
+    <div class="lp-pmsg a">
+      <strong>Sim!</strong> O Ministério da Saúde recomenda várias vacinas na gestação.
+      As principais são <strong>Influenza</strong>, <strong>dTpa</strong>
+      (tétano + coqueluche) e <strong>Hepatite B</strong> —
+      todas gratuitas na UBS. 💉
+    </div>
+    <p class="lp-preview-label">✦ Resposta baseada no calendário oficial do PNI</p>
+  </div>
 
-  <!-- Como funciona -->
-  <div class="lp-como">
-    <p class="lp-section-titulo">Como funciona</p>
-    <div class="lp-steps">
-      <div class="lp-step">
-        <div class="lp-step-num">1</div>
-        <div class="lp-step-texto">
-          <h4>Escreva sua dúvida</h4>
-          <p>Digite qualquer pergunta sobre vacinas — calendário, doses, efeitos, mitos.</p>
-        </div>
-      </div>
-      <div class="lp-step">
-        <div class="lp-step-num">2</div>
-        <div class="lp-step-texto">
-          <h4>A IA consulta o SUS</h4>
-          <p>Buscamos nas tabelas oficiais do Ministério da Saúde antes de responder.</p>
-        </div>
-      </div>
-      <div class="lp-step">
-        <div class="lp-step-num">3</div>
-        <div class="lp-step-texto">
-          <h4>Resposta clara na hora</h4>
-          <p>Sem cadastro, sem fila, sem enrolação. Salve no calendário ou compartilhe.</p>
-        </div>
-      </div>
+  <!-- Barra de confiança -->
+  <div class="lp-trust">
+    <div class="lp-trust-item">
+      <span class="lp-trust-num">34</span>
+      <span class="lp-trust-label">vacinas cadastradas</span>
+    </div>
+    <div class="lp-trust-item">
+      <span class="lp-trust-num">24h</span>
+      <span class="lp-trust-label">disponível</span>
+    </div>
+    <div class="lp-trust-item">
+      <span class="lp-trust-num">SUS</span>
+      <span class="lp-trust-label">dados oficiais</span>
     </div>
   </div>
 
@@ -1012,7 +1064,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
 
   <!-- FAQ -->
   <div class="lp-faq">
-    <p class="lp-section-titulo">Perguntas frequentes</p>
+    <p class="lp-section-titulo">Dúvidas comuns</p>
     <div class="lp-faq-items">
       <details class="lp-faq-item">
         <summary>Vacina causa autismo?</summary>
@@ -1020,33 +1072,30 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
       </details>
       <details class="lp-faq-item">
         <summary>Grávida pode se vacinar?</summary>
-        <p>Sim! O PNI recomenda várias vacinas durante a gestação — como Influenza, dTpa e Hepatite B. O VacinaFácil AI te orienta quais são seguras em cada trimestre.</p>
+        <p>Sim! O PNI recomenda várias vacinas durante a gestação — Influenza, dTpa e Hepatite B são as principais. O VacinaFácil AI te orienta quais são seguras em cada trimestre.</p>
       </details>
       <details class="lp-faq-item">
         <summary>Onde tomar vacina de graça?</summary>
-        <p>Em qualquer UBS (Unidade Básica de Saúde) do Brasil. Todas as vacinas do calendário oficial do SUS são 100% gratuitas. Use o botão 📍 UBS no chat para achar a mais próxima.</p>
+        <p>Em qualquer UBS (Unidade Básica de Saúde) do Brasil. Use o botão 📍 UBS dentro do chat para encontrar a mais próxima no mapa.</p>
       </details>
       <details class="lp-faq-item">
         <summary>Meus dados ficam guardados?</summary>
-        <p>Não armazenamos suas perguntas ou dados pessoais. O histórico fica só no seu aparelho e pode ser apagado a qualquer momento.</p>
+        <p>Não armazenamos dados pessoais identificáveis. O histórico fica só no seu aparelho. Veja nossa <a href="/privacidade" target="_blank" style="color:#a7f3d0">Política de Privacidade</a>.</p>
       </details>
     </div>
   </div>
 
   <hr class="lp-divider">
 
-  <!-- Seals + Disclaimer -->
+  <!-- Footer -->
   <div class="lp-footer">
-    <div class="lp-selos">
-      <div class="lp-selo">✅ 100% gratuito</div>
-      <div class="lp-selo">🏥 Dados do SUS</div>
-      <div class="lp-selo">🔒 Sem cadastro</div>
-      <div class="lp-selo">📱 Funciona offline</div>
-    </div>
-
+    <button class="lp-cta" onclick="abrirChat()" style="margin-bottom:14px">
+      💬 Começar agora
+    </button>
     <p class="lp-disclaimer">
       ⚠️ Não substitui médico ou profissional de saúde.<br>
-      Projeto acadêmico · PNI / Ministério da Saúde · <a href="tel:136" style="color:rgba(255,255,255,.6)">Disque Saúde 136</a>
+      Projeto acadêmico · PNI / Ministério da Saúde ·
+      <a href="tel:136" style="color:rgba(255,255,255,.6)">Disque Saúde 136</a>
     </p>
   </div>
 
