@@ -724,22 +724,26 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
   outline-offset: 2px;
 }
 
-/* ── CAMPANHAS DE VACINAÇÃO ─────────────── */
-#campanhas-section {
+/* ── CAMPANHAS — barra + modal ───────────── */
+#camp-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg,#854d0e,#b45309);
+  color: #fff;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  border: none;
   width: 100%;
-  max-width: 420px;
-  display: none;   /* visível só quando houver campanhas */
-  flex-direction: column;
+  font-family: inherit;
+  text-align: left;
   gap: 8px;
 }
-.camp-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.6);
-  margin-bottom: 2px;
-}
+#camp-bar:hover { background: linear-gradient(90deg,#713f12,#92400e); }
+#camp-bar .cb-arrow { font-size: 16px; flex-shrink: 0; }
 .camp-card {
   display: flex;
   gap: 12px;
@@ -909,12 +913,6 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
     </div>
   </div>
 
-  <!-- Campanhas de vacinação ativas (carregadas via JS) -->
-  <div id="campanhas-section">
-    <p class="camp-label">🔔 Campanhas em andamento</p>
-    <!-- cards injetados pelo JS -->
-  </div>
-
   <!-- CTA logo após os cards -->
   <div style="width:100%;max-width:400px">
     <button class="lp-cta" onclick="abrirChat()">
@@ -1021,6 +1019,29 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
     Online
   </div>
 </header>
+
+<!-- ── BARRA CAMPANHAS ──────────────────────────── -->
+<button id="camp-bar" onclick="abrirCampanhas()" aria-label="Ver campanhas de vacinação ativas">
+  <span>📢 <strong>Campanhas ativas</strong> — clique para ver</span>
+  <span class="cb-arrow">›</span>
+</button>
+
+<!-- ── MODAL CAMPANHAS ──────────────────────────── -->
+<div class="modal-overlay" id="modalCampanhas" onclick="fecharModalCampanhas(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="campTitulo">
+    <div class="modal-titulo">
+      <span id="campTitulo">📢 Campanhas de Vacinação Ativas</span>
+      <button onclick="document.getElementById('modalCampanhas').classList.remove('aberto')"
+              aria-label="Fechar">✕</button>
+    </div>
+    <div id="modal-camp-body" style="display:flex;flex-direction:column;gap:10px;padding:16px">
+      <!-- cards injetados por JS -->
+    </div>
+    <div style="padding:0 16px 16px;font-size:12px;color:#6b7280;text-align:center">
+      Procure a UBS mais próxima para se vacinar gratuitamente pelo SUS.
+    </div>
+  </div>
+</div>
 
 <!-- ── CHAT ────────────────────────────────────── -->
 <div class="chat" id="chat" role="log" aria-live="polite" aria-label="Histórico de conversa com o assistente" aria-relevant="additions">
@@ -1264,6 +1285,7 @@ function abrirChat() {
   const landing = document.getElementById('landing');
   landing.classList.add('saindo');
   setTimeout(() => { landing.style.display = 'none'; }, 500);
+  carregarCampanhas(); // carrega campanhas ao entrar no chat
 }
 
 function voltarLanding() {
@@ -1684,9 +1706,6 @@ if (localStorage.getItem('acessibilidade') === '1') {
 // Histórico local
 carregarHistorico();
 
-// Campanhas de vacinação ativas
-carregarCampanhas();
-
 // Verifica lembretes ao abrir
 verificarLembretes();
 
@@ -1703,32 +1722,50 @@ async function carregarCampanhas() {
     const lista = data.campanhas || [];
     if (!lista.length) return;
 
-    const section = document.getElementById('campanhas-section');
-    if (!section) return;
+    // Popula modal
+    const body = document.getElementById('modal-camp-body');
+    if (body) {
+      body.innerHTML = '';
+      lista.forEach(c => {
+        const icone = c.urgente ? '⚠️' : '🔔';
+        const card  = document.createElement('a');
+        card.className = 'camp-card' + (c.urgente ? ' urgente' : '');
+        card.href      = c.fonte_url || '#';
+        card.target    = '_blank';
+        card.rel       = 'noopener noreferrer';
+        card.style.cssText = 'background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;text-decoration:none;';
+        card.innerHTML =
+          `<span style="font-size:22px;flex-shrink:0">${icone}</span>` +
+          `<div style="flex:1">` +
+            `<div style="font-size:14px;font-weight:700;color:#085C3C;margin-bottom:4px">${c.titulo}</div>` +
+            (c.descricao    ? `<div style="font-size:13px;color:#374151;margin-bottom:6px">${c.descricao}</div>` : '') +
+            `<div style="font-size:12px;color:#6b7280;display:flex;gap:8px;flex-wrap:wrap">` +
+              (c.publico_alvo ? `<span>👥 ${c.publico_alvo}</span>` : '') +
+              (c.periodo      ? `<span>📅 ${c.periodo}</span>`      : '') +
+            `</div>` +
+          `</div>`;
+        body.appendChild(card);
+      });
+    }
 
-    lista.forEach(c => {
-      const icone = c.urgente ? '⚠️' : '🔔';
-      const card  = document.createElement('a');
-      card.className = 'camp-card' + (c.urgente ? ' urgente' : '');
-      card.href      = c.fonte_url || '#';
-      card.target    = '_blank';
-      card.rel       = 'noopener noreferrer';
-      card.setAttribute('aria-label', c.titulo);
-      card.innerHTML =
-        `<span class="camp-icon">${icone}</span>` +
-        `<div class="camp-body">` +
-          `<div class="camp-titulo">${c.titulo}</div>` +
-          (c.descricao    ? `<div class="camp-desc">${c.descricao}</div>` : '') +
-          `<div class="camp-meta">` +
-            (c.publico_alvo ? `<span>👥 ${c.publico_alvo}</span>` : '') +
-            (c.periodo      ? `<span>📅 ${c.periodo}</span>`      : '') +
-          `</div>` +
-        `</div>`;
-      section.appendChild(card);
-    });
-
-    section.style.display = 'flex';
+    // Exibe barra de notificação no chat
+    const bar = document.getElementById('camp-bar');
+    if (bar) {
+      const urgente = lista.some(c => c.urgente);
+      bar.style.display = 'flex';
+      if (urgente) bar.style.background = 'linear-gradient(90deg,#854d0e,#b45309)';
+      bar.querySelector('span strong').textContent =
+        lista.length === 1 ? '1 campanha ativa' : `${lista.length} campanhas ativas`;
+    }
   } catch (_) {}
+}
+
+function abrirCampanhas() {
+  document.getElementById('modalCampanhas').classList.add('aberto');
+}
+function fecharModalCampanhas(e) {
+  if (e.target === document.getElementById('modalCampanhas'))
+    document.getElementById('modalCampanhas').classList.remove('aberto');
 }
 
 /* ─── BANNER LGPD ────────────────────────── */
