@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 import anthropic
 from openai import OpenAI
-from fastapi import FastAPI, Form, HTTPException, Query
+from fastapi import FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse, Response
 from pydantic import BaseModel
 
@@ -149,8 +149,11 @@ def buscar_contexto(pergunta: str, limite: int = 6) -> str:
 # ── Endpoints ─────────────────────────────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
-def index():
+def index(request: Request):
+    base = str(request.base_url).rstrip("/")
     content = open(os.path.join(STATIC, "index.html"), encoding="utf-8").read()
+    # Substitui placeholder pela URL real do servidor (OG tags, WhatsApp share, etc.)
+    content = content.replace("https://vacinafacil-ai.onrender.com", base)
     return HTMLResponse(content=content, headers={
         "Cache-Control": "no-cache, no-store, must-revalidate",
         "Pragma": "no-cache",
