@@ -1072,7 +1072,6 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
   <button id="btnAcesso" class="header-btn" onclick="toggleAcessibilidade()" title="Aumentar texto" aria-label="Aumentar tamanho do texto" aria-pressed="false">A+</button>
   <button class="header-btn ubs-btn" onclick="abrirUBS()" title="Encontrar UBS próxima" aria-label="Encontrar Unidade Básica de Saúde próxima no mapa">📍 UBS</button>
   <button class="header-btn" style="background:rgba(239,68,68,.7)" onclick="abrirEmergencias()" title="Números de emergência" aria-label="Ver números de emergência: SAMU e Bombeiros">🚨</button>
-  <button id="btnNotif" class="header-btn" style="display:none" onclick="ativarNotificacoes()" title="Ativar notificações de campanhas" aria-label="Ativar notificações de campanhas">🔔</button>
   <div class="header-status">
     <div class="dot-online"></div>
     Online
@@ -1775,27 +1774,6 @@ function carregarHistorico() {
   });
 }
 
-/* ─── NOTIFICAÇÕES PUSH ─────────────────────── */
-async function ativarNotificacoes() {
-  // iOS Safari sem suporte nativo → orienta instalar como PWA
-  if (!('Notification' in window)) {
-    toast('📱 Toque em Compartilhar → "Adicionar à Tela de Início" para ativar notificações');
-    return;
-  }
-  if (!('serviceWorker' in navigator)) {
-    toast('❌ Seu navegador não suporta notificações'); return;
-  }
-  const perm = await Notification.requestPermission();
-  if (perm !== 'granted') { toast('❌ Permissão de notificação negada'); return; }
-  try {
-    await navigator.serviceWorker.ready;
-    toast('🔔 Notificações ativadas! Você será avisado sobre campanhas.');
-    const btn = document.getElementById('btnNotif');
-    if (btn) { btn.textContent = '🔔✓'; btn.onclick = null; btn.style.opacity = '.7'; }
-    localStorage.setItem('notif_ok', '1');
-  } catch (_) { toast('❌ Erro ao ativar notificações'); }
-}
-
 /* ─── HISTÓRICO DE CONVERSA (localStorage) ── */
 const CONV_KEY = 'vf_conv_hist';
 
@@ -1842,12 +1820,6 @@ if (localStorage.getItem('acessibilidade') === '1') {
 carregarHistorico();
 restaurarHistoriaChat();
 
-// Notificações: mostra botão 🔔 sempre (iOS recebe orientação para instalar PWA)
-const btnN = document.getElementById('btnNotif');
-if (btnN) {
-  btnN.style.display = '';
-  if (localStorage.getItem('notif_ok')) { btnN.textContent = '🔔✓'; btnN.style.opacity = '.7'; }
-}
 
 // Verifica lembretes ao abrir
 verificarLembretes();
