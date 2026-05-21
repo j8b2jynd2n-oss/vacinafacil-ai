@@ -1777,7 +1777,12 @@ function carregarHistorico() {
 
 /* ─── NOTIFICAÇÕES PUSH ─────────────────────── */
 async function ativarNotificacoes() {
-  if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+  // iOS Safari sem suporte nativo → orienta instalar como PWA
+  if (!('Notification' in window)) {
+    toast('📱 Toque em Compartilhar → "Adicionar à Tela de Início" para ativar notificações');
+    return;
+  }
+  if (!('serviceWorker' in navigator)) {
     toast('❌ Seu navegador não suporta notificações'); return;
   }
   const perm = await Notification.requestPermission();
@@ -1837,13 +1842,11 @@ if (localStorage.getItem('acessibilidade') === '1') {
 carregarHistorico();
 restaurarHistoriaChat();
 
-// Notificações: mostra botão 🔔 se suportado e não bloqueado
-if ('Notification' in window && Notification.permission !== 'denied') {
-  const btnN = document.getElementById('btnNotif');
-  if (btnN) {
-    btnN.style.display = '';
-    if (localStorage.getItem('notif_ok')) { btnN.textContent = '🔔✓'; btnN.style.opacity = '.7'; }
-  }
+// Notificações: mostra botão 🔔 sempre (iOS recebe orientação para instalar PWA)
+const btnN = document.getElementById('btnNotif');
+if (btnN) {
+  btnN.style.display = '';
+  if (localStorage.getItem('notif_ok')) { btnN.textContent = '🔔✓'; btnN.style.opacity = '.7'; }
 }
 
 // Verifica lembretes ao abrir
