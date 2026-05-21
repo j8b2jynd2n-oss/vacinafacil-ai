@@ -176,50 +176,14 @@ def icon():
     return FileResponse(os.path.join(STATIC, "icon.svg"), media_type="image/svg+xml")
 
 
-@app.get("/og.svg")
+@app.get("/og.png")
 def og_image():
-    """Imagem Open Graph para preview no WhatsApp, LinkedIn e redes sociais."""
-    svg = """\
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#085C3C"/>
-      <stop offset="60%"  stop-color="#0f9960"/>
-      <stop offset="100%" stop-color="#1aaa6e"/>
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <!-- círculos decorativos -->
-  <circle cx="1130" cy="70"  r="200" fill="rgba(255,255,255,0.04)"/>
-  <circle cx="40"   cy="590" r="150" fill="rgba(255,255,255,0.04)"/>
-  <!-- ícone -->
-  <rect x="80" y="195" width="130" height="130" rx="32" fill="rgba(255,255,255,0.15)"/>
-  <text x="145" y="285" font-size="76" text-anchor="middle"
-        font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif">&#x1F489;</text>
-  <!-- título -->
-  <text x="240" y="268"
-        font-family="Arial,Helvetica,sans-serif" font-size="68" font-weight="800"
-        fill="#ffffff" letter-spacing="-1">VacinaF&#xe1;cil</text>
-  <text x="240" y="340"
-        font-family="Arial,Helvetica,sans-serif" font-size="68" font-weight="800"
-        fill="#a7f3d0" letter-spacing="-1">AI</text>
-  <!-- tagline -->
-  <text x="80" y="418"
-        font-family="Arial,Helvetica,sans-serif" font-size="26"
-        fill="rgba(255,255,255,0.85)">Tire d&#xfa;vidas sobre vacinas &#x2014; gratuito e baseado no SUS</text>
-  <!-- selos -->
-  <rect x="80"  y="450" width="210" height="42" rx="21" fill="rgba(255,255,255,0.15)"/>
-  <text x="185" y="476" text-anchor="middle"
-        font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="600" fill="#ffffff">&#x1F1E7;&#x1F1F7; Dados do SUS</text>
-  <rect x="304" y="450" width="200" height="42" rx="21" fill="rgba(255,255,255,0.15)"/>
-  <text x="404" y="476" text-anchor="middle"
-        font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="600" fill="#ffffff">&#x2705; 100% gratuito</text>
-  <rect x="518" y="450" width="200" height="42" rx="21" fill="rgba(255,255,255,0.15)"/>
-  <text x="618" y="476" text-anchor="middle"
-        font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="600" fill="#ffffff">&#x1F512; Sem cadastro</text>
-</svg>"""
-    return Response(content=svg, media_type="image/svg+xml",
-                    headers={"Cache-Control": "public, max-age=86400"})
+    """Imagem Open Graph 1200×630 PNG para preview no WhatsApp, LinkedIn e redes sociais."""
+    return FileResponse(
+        os.path.join(STATIC, "og.png"),
+        media_type="image/png",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
 
 
 @app.post("/push/subscribe")
