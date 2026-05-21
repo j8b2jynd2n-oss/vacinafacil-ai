@@ -209,22 +209,32 @@ def chat(req: ChatRequest):
         try:
             contexto = buscar_contexto(req.message)
 
-            # Campanhas ativas — injeta no contexto para o AI mencionar proativamente
+            # Campanhas: ativas agora + planejadas que ainda não terminaram
             campanhas_ctx = ""
             try:
-                hoje = datetime.now(timezone.utc).date().isoformat()
+                hoje = datetime.now(timezone.utc).date()
+                # Traz tudo que ainda não expirou (data_fim >= hoje)
                 cr = supabase.table("campanhas").select(
-                    "titulo,descricao,publico_alvo,periodo"
-                ).eq("ativo", True).lte("data_inicio", hoje).gte("data_fim", hoje).execute()
+                    "titulo,descricao,publico_alvo,periodo,data_inicio,data_fim"
+                ).eq("ativo", True).gte("data_fim", hoje.isoformat()).execute()
                 if cr.data:
-                    linhas = "\n".join(
-                        f"- {c['titulo']}: {c.get('descricao','')} | "
-                        f"Público: {c.get('publico_alvo','')} | {c.get('periodo','')}"
-                        for c in cr.data
-                    )
+                    ativas  = [c for c in cr.data if c.get("data_inicio","9999") <= hoje.isoformat()]
+                    futuras = [c for c in cr.data if c.get("data_inicio","9999") >  hoje.isoformat()]
+                    linhas = []
+                    for c in ativas:
+                        linhas.append(
+                            f"- [ATIVA AGORA] {c['titulo']}: {c.get('descricao','')} | "
+                            f"Público: {c.get('publico_alvo','')} | {c.get('periodo','')}"
+                        )
+                    for c in futuras:
+                        linhas.append(
+                            f"- [EM BREVE] {c['titulo']}: {c.get('descricao','')} | "
+                            f"Público: {c.get('publico_alvo','')} | {c.get('periodo','')} | "
+                            f"Início previsto: {c.get('data_inicio','')}"
+                        )
                     campanhas_ctx = (
-                        "### CAMPANHAS DE VACINAÇÃO ATIVAS AGORA\n"
-                        f"{linhas}\n\n"
+                        "### CAMPANHAS DE VACINAÇÃO 2026 (ativas e planejadas)\n"
+                        + "\n".join(linhas) + "\n\n"
                     )
             except Exception:
                 pass
