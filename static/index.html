@@ -479,6 +479,22 @@ body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
   flex-shrink: 0;
 }
 
+/* Mobile: scroll horizontal numa linha só — muito mais compacto */
+@media (max-width: 600px) {
+  .suggestions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 12px;
+    gap: 7px;
+  }
+  .suggestions::-webkit-scrollbar { display: none; }
+  .suggestions .chip { flex-shrink: 0; scroll-snap-align: start; }
+}
+
 .chip {
   display: flex; align-items: center; gap: 6px;
   background: #fff;
@@ -491,6 +507,7 @@ body.grande .btn-action { font-size: 14px; padding: 6px 12px; }
   transition: background .15s, color .15s;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  white-space: nowrap;
 }
 .chip:hover, .chip:active { background: var(--green); color: #fff; }
 .chip-icon { font-size: 17px; line-height: 1; }
