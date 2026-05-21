@@ -1324,7 +1324,7 @@ function bolhaIA(pergunta) {
       <button onclick="darFeedback(this,false)" aria-label="Resposta não útil" title="Não útil">👎</button>
     </div>
     <div class="bubble-actions" id="bactions">
-      <button class="btn-action" onclick="compartilharWhatsApp(this)" title="Compartilhar no WhatsApp">📲 WhatsApp</button>
+      <button class="btn-action" onclick="compartilharWhatsApp(this)" title="Compartilhar resposta">📲 Compartilhar</button>
       <button class="btn-action" onclick="abrirLembrete(this)" title="Lembrete de dose">⏰ Lembrete</button>
       <button class="btn-action" id="btn-replay" style="display:none" onclick="falarBtn(this)" title="Ouvir resposta">🔊 Ouvir</button>
     </div>
@@ -1534,11 +1534,21 @@ async function darFeedback(btn, avaliacao) {
   } catch (_) {}
 }
 
-/* ─── WHATSAPP ───────────────────────────────── */
-function compartilharWhatsApp(btn) {
+/* ─── COMPARTILHAR ───────────────────────────── */
+async function compartilharWhatsApp(btn) {
   const bubble = btn.closest('.msg.ai').querySelector('.bubble');
   const texto  = (bubble?.innerText || '').slice(0, 500);
   const msg = `💉 *VacinaFácil AI responde:*\n\n${texto}\n\n_Saiba mais: ${window.location.origin}_`;
+
+  // Web Share API — abre folha nativa do iOS/Android (inclui WhatsApp, Telegram, etc.)
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'VacinaFácil AI', text: msg });
+      return;
+    } catch (_) { /* usuário cancelou */ return; }
+  }
+
+  // Fallback desktop: abre wa.me em nova aba
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
