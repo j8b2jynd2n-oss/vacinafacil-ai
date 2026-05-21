@@ -1,5 +1,5 @@
 // Bump a versão sempre que o HTML mudar — força limpeza do cache antigo
-const CACHE = 'vacinafacil-v3';
+const CACHE = 'vacinafacil-v4';
 
 // Apenas assets verdadeiramente estáticos ficam em cache
 const STATIC = ['/manifest.json', '/icon.svg'];
@@ -21,6 +21,33 @@ self.addEventListener('activate', e => {
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
+  );
+});
+
+/* ── PUSH NOTIFICATIONS ────────────────────── */
+self.addEventListener('push', e => {
+  const data = e.data ? e.data.json() : {};
+  e.waitUntil(
+    self.registration.showNotification(data.title || 'VacinaFácil AI 💉', {
+      body: data.body || 'Nova informação sobre vacinação disponível.',
+      icon: '/icon.svg',
+      badge: '/icon.svg',
+      tag: 'vacina-notif',
+      renotify: true,
+      data: { url: data.url || '/' }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+      for (const c of cs) {
+        if (c.url === (e.notification.data?.url || '/') && 'focus' in c) return c.focus();
+      }
+      return clients.openWindow(e.notification.data?.url || '/');
+    })
   );
 });
 

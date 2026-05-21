@@ -10,7 +10,21 @@
 <meta name="apple-mobile-web-app-title" content="VacinaFácil">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
-<title>VacinaFácil AI</title>
+<title>VacinaFácil AI — Tire dúvidas sobre vacinas gratuitamente</title>
+<meta name="description" content="Assistente virtual gratuito de orientação vacinal, baseado no calendário oficial do SUS. Pergunte sobre vacinas, doses, efeitos e campanhas.">
+<!-- Open Graph / WhatsApp / LinkedIn -->
+<meta property="og:title"        content="VacinaFácil AI — Tire dúvidas sobre vacinas">
+<meta property="og:description"  content="Assistente gratuito baseado no calendário oficial do SUS. Pergunte sobre vacinas, doses, efeitos e campanhas de vacinação.">
+<meta property="og:image"        content="https://vacinafacil-ai.onrender.com/og.svg">
+<meta property="og:url"          content="https://vacinafacil-ai.onrender.com">
+<meta property="og:type"         content="website">
+<meta property="og:locale"       content="pt_BR">
+<meta property="og:site_name"    content="VacinaFácil AI">
+<!-- Twitter / X -->
+<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:title"       content="VacinaFácil AI — Tire dúvidas sobre vacinas">
+<meta name="twitter:description" content="Assistente gratuito baseado no calendário oficial do SUS.">
+<meta name="twitter:image"       content="https://vacinafacil-ai.onrender.com/og.svg">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -885,6 +899,33 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
   font-family: inherit;
 }
 #lgpd-ok:hover { background: #d1fae5; }
+
+/* ── FEEDBACK INLINE ─────────────────────── */
+.inline-fb {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 14px 6px;
+  flex-shrink: 0;
+}
+.inline-fb .fb-label {
+  font-size: 12px;
+  color: var(--subtext);
+  font-weight: 500;
+}
+.inline-fb button {
+  background: rgba(0,0,0,.05);
+  border: none;
+  border-radius: 14px;
+  padding: 3px 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.inline-fb button:hover  { background: rgba(0,0,0,.1); transform: scale(1.12); }
+.inline-fb button:active { transform: scale(.92); }
 </style>
 </head>
 <body>
@@ -1031,6 +1072,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
   <button id="btnAcesso" class="header-btn" onclick="toggleAcessibilidade()" title="Aumentar texto" aria-label="Aumentar tamanho do texto" aria-pressed="false">A+</button>
   <button class="header-btn ubs-btn" onclick="abrirUBS()" title="Encontrar UBS próxima" aria-label="Encontrar Unidade Básica de Saúde próxima no mapa">📍 UBS</button>
   <button class="header-btn" style="background:rgba(239,68,68,.7)" onclick="abrirEmergencias()" title="Números de emergência" aria-label="Ver números de emergência: SAMU e Bombeiros">🚨</button>
+  <button id="btnNotif" class="header-btn" style="display:none" onclick="ativarNotificacoes()" title="Ativar notificações de campanhas" aria-label="Ativar notificações de campanhas">🔔</button>
   <div class="header-status">
     <div class="dot-online"></div>
     Online
@@ -1277,15 +1319,18 @@ function bolhaIA(pergunta) {
   d.className = 'msg ai';
   d.innerHTML = `
     <div class="bubble" id="resp"></div>
+    <div class="inline-fb" id="inline-fb" style="display:none">
+      <span class="fb-label">Foi útil?</span>
+      <button onclick="darFeedback(this,true)"  aria-label="Resposta útil"    title="Útil">👍</button>
+      <button onclick="darFeedback(this,false)" aria-label="Resposta não útil" title="Não útil">👎</button>
+    </div>
     <div class="bubble-actions" id="bactions">
-      <button class="btn-action" id="btnPos" onclick="darFeedback(this,true)"  title="Útil">👍</button>
-      <button class="btn-action" id="btnNeg" onclick="darFeedback(this,false)" title="Não útil">👎</button>
-      <button class="btn-action" onclick="compartilharWhatsApp(this)" title="Compartilhar">📲 WhatsApp</button>
+      <button class="btn-action" onclick="compartilharWhatsApp(this)" title="Compartilhar no WhatsApp">📲 WhatsApp</button>
       <button class="btn-action" onclick="abrirLembrete(this)" title="Lembrete de dose">⏰ Lembrete</button>
       <button class="btn-action" id="btn-replay" style="display:none" onclick="falarBtn(this)" title="Ouvir resposta">🔊 Ouvir</button>
     </div>
     <div class="msg-time" id="resp-time"></div>`;
-  d.querySelector('#bactions').dataset.pergunta = pergunta;
+  d.querySelector('#inline-fb').dataset.pergunta = pergunta;
   chat.appendChild(d);
   rolarFim();
 }
@@ -1470,24 +1515,17 @@ function toggleMic() {
   rec.start();
 }
 
-/* ─── FEEDBACK 👍👎 ───────────────────────────── */
+/* ─── FEEDBACK 👍👎 (inline) ────────────────── */
 async function darFeedback(btn, avaliacao) {
-  const actions = btn.closest('.bubble-actions');
-  const pergunta = actions.dataset.pergunta || '';
-  const resposta = actions.closest('.msg.ai').querySelector('.bubble')?.innerText || '';
-  const btnPos = actions.querySelector('#btnPos') || actions.querySelectorAll('.btn-action')[0];
-  const btnNeg = actions.querySelector('#btnNeg') || actions.querySelectorAll('.btn-action')[1];
-  btnPos.disabled = true;
-  btnNeg.disabled = true;
-  btnPos.removeAttribute('id');
-  btnNeg.removeAttribute('id');
-  if (avaliacao) {
-    btnPos.classList.add('ok');
-    btnPos.textContent = '✅';
-  } else {
-    btnNeg.classList.add('nao');
-    btnNeg.textContent = '❌';
-  }
+  const fb = btn.closest('.inline-fb');
+  if (!fb || fb.dataset.done) return;
+  fb.dataset.done = '1';
+
+  const pergunta = fb.dataset.pergunta || '';
+  const resposta = fb.closest('.msg.ai')?.querySelector('.bubble')?.innerText || '';
+
+  fb.innerHTML = `<span style="font-size:12px;color:var(--subtext)">${avaliacao ? '✅' : '❌'} Obrigado pelo feedback!</span>`;
+
   try {
     await fetch('/feedback', {
       method: 'POST',
@@ -1501,7 +1539,7 @@ async function darFeedback(btn, avaliacao) {
 function compartilharWhatsApp(btn) {
   const bubble = btn.closest('.msg.ai').querySelector('.bubble');
   const texto  = (bubble?.innerText || '').slice(0, 500);
-  const msg = `💉 *VacinaFácil AI responde:*\n\n${texto}\n\n_Saiba mais: http://localhost:8000_`;
+  const msg = `💉 *VacinaFácil AI responde:*\n\n${texto}\n\n_Saiba mais: ${window.location.origin}_`;
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
@@ -1604,6 +1642,20 @@ async function enviar() {
   bolhaUsuario(pergunta);
   bolhaDigitando();
 
+  // Wake-up: se o servidor demorar > 7s (Render dormindo), avisa o usuário
+  const wakeTimer = setTimeout(() => {
+    const typingEl = document.getElementById('typing');
+    if (typingEl && loading) {
+      typingEl.querySelector('.bubble').innerHTML =
+        '<div style="text-align:center;padding:6px 2px">' +
+        '<div style="font-size:22px;margin-bottom:4px">⏳</div>' +
+        '<div style="font-size:13px;color:#6b7280;line-height:1.7">' +
+        '<strong>Iniciando servidor...</strong><br>' +
+        '<small>Pode levar até 30 segundos<br>na primeira consulta do dia</small>' +
+        '</div></div>';
+    }
+  }, 7000);
+
   try {
     const res = await fetch('/chat', {
       method: 'POST',
@@ -1611,6 +1663,7 @@ async function enviar() {
       body: JSON.stringify({ message: pergunta, history })
     });
 
+    clearTimeout(wakeTimer);
     document.getElementById('typing')?.remove();
     bolhaIA(pergunta);
 
@@ -1643,6 +1696,13 @@ async function enviar() {
     timeEl.removeAttribute('id');
     timeEl.textContent = hora();
 
+    // Mostra feedback inline (👍/👎 direto abaixo da bolha)
+    const inlineFb = document.getElementById('inline-fb');
+    if (inlineFb) {
+      inlineFb.removeAttribute('id');
+      inlineFb.style.display = 'flex';
+    }
+
     // Mostra ações da bolha
     const actions = document.getElementById('bactions');
     if (actions) {
@@ -1665,8 +1725,10 @@ async function enviar() {
     history.push({ role: 'assistant', content: fullText });
     if (history.length > 20) history = history.slice(-20);
     salvarNoHistorico(pergunta);
+    salvarHistoriaChat();
 
   } catch (_) {
+    clearTimeout(wakeTimer);
     document.getElementById('typing')?.remove();
     const d = document.createElement('div');
     d.className = 'msg ai';
@@ -1713,6 +1775,57 @@ function carregarHistorico() {
   });
 }
 
+/* ─── NOTIFICAÇÕES PUSH ─────────────────────── */
+async function ativarNotificacoes() {
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+    toast('❌ Seu navegador não suporta notificações'); return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') { toast('❌ Permissão de notificação negada'); return; }
+  try {
+    await navigator.serviceWorker.ready;
+    toast('🔔 Notificações ativadas! Você será avisado sobre campanhas.');
+    const btn = document.getElementById('btnNotif');
+    if (btn) { btn.textContent = '🔔✓'; btn.onclick = null; btn.style.opacity = '.7'; }
+    localStorage.setItem('notif_ok', '1');
+  } catch (_) { toast('❌ Erro ao ativar notificações'); }
+}
+
+/* ─── HISTÓRICO DE CONVERSA (localStorage) ── */
+const CONV_KEY = 'vf_conv_hist';
+
+function salvarHistoriaChat() {
+  try {
+    if (history.length)
+      localStorage.setItem(CONV_KEY, JSON.stringify({ h: history.slice(-20), ts: Date.now() }));
+  } catch (_) {}
+}
+
+function restaurarHistoriaChat() {
+  try {
+    const s = JSON.parse(localStorage.getItem(CONV_KEY) || 'null');
+    if (!s || !s.h || !s.h.length) return;
+    if (Date.now() - s.ts > 86400000) { localStorage.removeItem(CONV_KEY); return; } // expirou 24h
+    history = s.h;
+    const turns = Math.floor(s.h.length / 2);
+    const d = document.createElement('div');
+    d.className = 'hist-banner';
+    d.style.cssText = 'text-align:center;font-size:11px;color:#9ca3af;padding:4px 12px 8px;flex-shrink:0';
+    d.innerHTML = `💬 ${turns} pergunta${turns !== 1 ? 's' : ''} anterior${turns !== 1 ? 'es' : ''} carregada${turns !== 1 ? 's' : ''} · ` +
+      '<button onclick="limparHistoriaChat()" style="background:none;border:none;color:#0B7A50;' +
+      'font-size:11px;cursor:pointer;text-decoration:underline;padding:0;font-family:inherit">' +
+      'Nova conversa</button>';
+    document.getElementById('chat').appendChild(d);
+  } catch (_) {}
+}
+
+function limparHistoriaChat() {
+  localStorage.removeItem(CONV_KEY);
+  history = [];
+  document.querySelectorAll('.hist-banner').forEach(e => e.remove());
+  toast('🗑️ Contexto anterior limpo — nova conversa iniciada');
+}
+
 /* ─── INIT ───────────────────────────────────── */
 // Acessibilidade salva
 if (localStorage.getItem('acessibilidade') === '1') {
@@ -1720,8 +1833,18 @@ if (localStorage.getItem('acessibilidade') === '1') {
   document.getElementById('btnAcesso').textContent = 'A-';
 }
 
-// Histórico local
+// Histórico local + contexto de conversa anterior
 carregarHistorico();
+restaurarHistoriaChat();
+
+// Notificações: mostra botão 🔔 se suportado e não bloqueado
+if ('Notification' in window && Notification.permission !== 'denied') {
+  const btnN = document.getElementById('btnNotif');
+  if (btnN) {
+    btnN.style.display = '';
+    if (localStorage.getItem('notif_ok')) { btnN.textContent = '🔔✓'; btnN.style.opacity = '.7'; }
+  }
+}
 
 // Verifica lembretes ao abrir
 verificarLembretes();
