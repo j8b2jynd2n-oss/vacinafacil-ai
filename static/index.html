@@ -1536,20 +1536,30 @@ async function darFeedback(btn, avaliacao) {
 
 /* ─── COMPARTILHAR ───────────────────────────── */
 async function compartilharWhatsApp(btn) {
-  const bubble = btn.closest('.msg.ai').querySelector('.bubble');
-  const texto  = (bubble?.innerText || '').slice(0, 500);
-  const msg = `💉 *VacinaFácil AI responde:*\n\n${texto}\n\n_Saiba mais: ${window.location.origin}_`;
+  const msgEl = btn.closest('.msg.ai');
+  // Clona a bolha para remover o card UBS antes de pegar o texto
+  const clone = msgEl.querySelector('.bubble').cloneNode(true);
+  clone.querySelectorAll('.ubs-cta').forEach(e => e.remove());
+  const texto = (clone.innerText || clone.textContent || '').trim().slice(0, 500);
 
-  // Web Share API — abre folha nativa do iOS/Android (inclui WhatsApp, Telegram, etc.)
+  if (!texto) { toast('Nada para compartilhar ainda.'); return; }
+
+  const shareText = `💉 *VacinaFácil AI*\n\n${texto}`;
+
+  // Web Share API nativa — iOS/Android abre folha do sistema
   if (navigator.share) {
     try {
-      await navigator.share({ title: 'VacinaFácil AI', text: msg });
-      return;
-    } catch (_) { /* usuário cancelou */ return; }
+      await navigator.share({
+        title: 'VacinaFácil AI — Vacinas do SUS',
+        text:  shareText,
+        url:   window.location.origin,
+      });
+    } catch (_) { /* usuário cancelou */ }
+    return;
   }
 
-  // Fallback desktop: abre wa.me em nova aba
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  // Fallback desktop: wa.me
+  window.open('https://wa.me/?text=' + encodeURIComponent(shareText + '\n\n' + window.location.origin), '_blank');
 }
 
 /* ─── LEMBRETE / CALENDÁRIO ──────────────────── */
