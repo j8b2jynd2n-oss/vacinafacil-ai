@@ -189,8 +189,30 @@ def chat(req: ChatRequest):
     def generate():
         try:
             contexto = buscar_contexto(req.message)
+
+            # Campanhas ativas — injeta no contexto para o AI mencionar proativamente
+            campanhas_ctx = ""
+            try:
+                hoje = datetime.now(timezone.utc).date().isoformat()
+                cr = supabase.table("campanhas").select(
+                    "titulo,descricao,publico_alvo,periodo"
+                ).eq("ativo", True).lte("data_inicio", hoje).gte("data_fim", hoje).execute()
+                if cr.data:
+                    linhas = "\n".join(
+                        f"- {c['titulo']}: {c.get('descricao','')} | "
+                        f"Público: {c.get('publico_alvo','')} | {c.get('periodo','')}"
+                        for c in cr.data
+                    )
+                    campanhas_ctx = (
+                        "### CAMPANHAS DE VACINAÇÃO ATIVAS AGORA\n"
+                        f"{linhas}\n\n"
+                    )
+            except Exception:
+                pass
+
+            base = f"{campanhas_ctx}{contexto}" if contexto else campanhas_ctx
             user_content = (
-                f"{contexto}\n\n---\n\nPergunta: {req.message}" if contexto else req.message
+                f"{base}\n\n---\n\nPergunta: {req.message}" if base else req.message
             )
             messages = list(req.history)
             messages.append({"role": "user", "content": user_content})
@@ -225,6 +247,19 @@ def tts(req: TTSRequest):
         input=strip_markdown(req.text),
     )
     return StreamingResponse(audio.iter_bytes(1024), media_type="audio/mpeg")
+
+
+@app.get("/campanhas")
+def listar_campanhas():
+    """Retorna campanhas de vacinação ativas hoje (usada pelo frontend)."""
+    try:
+        hoje = datetime.now(timezone.utc).date().isoformat()
+        res = supabase.table("campanhas").select(
+            "id,titulo,descricao,publico_alvo,periodo,urgente,fonte_url"
+        ).eq("ativo", True).lte("data_inicio", hoje).gte("data_fim", hoje).execute()
+        return {"campanhas": res.data or []}
+    except Exception:
+        return {"campanhas": []}
 
 
 @app.get("/privacidade", response_class=HTMLResponse)
